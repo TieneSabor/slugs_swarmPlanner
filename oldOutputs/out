@@ -1,0 +1,110 @@
+# This file is a BDD exported by the SLUGS
+#
+# This BDD is a strategy.
+#
+# This header contains extra information used by LTLMoP's BDDStrategy.
+# Currently, the only metadata is 1) the total number of system goals
+# and 2) the mapping between variable numbers and proposition names.
+#
+# Some special variables are also added:
+#       - `_jx_b*` are used as a binary vector (b0 is LSB) to indicate
+#         the index of the currently-pursued goal.
+#       - `strat_type` is a binary variable used to indicate whether we are
+#          moving closer to the current goal (0) or transitioning to the next goal (1)
+#
+# Num goals: 1
+# Variable names:
+#	0: A
+#	1: A'
+#	2: B
+#	3: B'
+#	4: C
+#	5: C'
+#	6: D
+#	7: D'
+#	8: E
+#	9: E'
+#	10: _jx_b0
+#	11: strat_type
+#
+# For information about the DDDMP format, please see:
+#    http://www.cs.uleth.ca/~rice/cudd_docs/dddmp/dddmpAllFile.html#dddmpDump.c
+#
+# For information about how this file is generated, please see the SLUGS source.
+#
+c # BDD stored by the DDDMP tool in CNF format
+c #
+c .ver DDDMP-2.0
+c .nnodes 43
+c .nvars 12
+c .nsuppvars 12
+c .suppvarnames A A' B B' C C' D D' E E' _jx_b0 strat_type
+c .orderedvarnames A A' B B' C C' D D' E E' _jx_b0 strat_type
+c .ids  0 1 2 3 4 5 6 7 8 9 10 11
+c .permids  0 1 2 3 4 5 6 7 8 9 10 11
+c .auxids  0 1 2 3 4 5 6 7 8 9 10 11
+c .cnfids  0 1 2 3 4 5 6 7 8 9 10 11
+c .nroots 1
+c .rootids 1         
+c .nAddedCnfVar 0
+c #
+c # Init CNF Clauses
+c #
+p cnf 11 56                
+0 2 3 4 5 0
+0 2 3 4 8 0
+0 2 3 4 -10 0
+0 2 3 4 -9 0
+0 2 3 4 -7 0
+0 2 3 4 -6 0
+0 2 3 -4 9 0
+0 2 3 -4 -11 0
+0 2 3 -4 -10 0
+0 2 3 -4 -7 0
+0 2 3 -4 -6 0
+0 2 3 -4 -5 0
+0 2 -3 8 0
+0 2 -3 -10 0
+0 2 -3 -9 0
+0 2 -3 -7 0
+0 2 -3 -6 0
+0 2 -3 -4 0
+0 -2 9 0
+0 -2 -11 0
+0 -2 -10 0
+0 -2 -8 0
+0 -2 -7 0
+0 -2 -6 0
+0 -2 -5 0
+0 -2 -3 0
+0 -1 0
+-0 2 3 4 5 0
+-0 2 3 4 -11 0
+-0 2 3 4 -10 0
+-0 2 3 4 -9 0
+-0 2 3 4 -7 0
+-0 2 3 4 -6 0
+-0 2 3 -4 5 0
+-0 2 3 -4 -11 0
+-0 2 3 -4 -10 0
+-0 2 3 -4 -7 0
+-0 2 3 -4 -6 0
+-0 2 -3 -11 0
+-0 2 -3 -10 0
+-0 2 -3 -9 0
+-0 2 -3 -7 0
+-0 2 -3 -6 0
+-0 -2 3 5 0
+-0 -2 3 -11 0
+-0 -2 3 -10 0
+-0 -2 3 -8 0
+-0 -2 3 -7 0
+-0 -2 3 -6 0
+-0 -2 -3 -11 0
+-0 -2 -3 -10 0
+-0 -2 -3 -9 0
+-0 -2 -3 -8 0
+-0 -2 -3 -7 0
+-0 -2 -3 -6 0
+-0 -1 0
+c # End of Cnf From dddmp-2.0

@@ -1,0 +1,4 @@
+src/slugs --swarmTest examples/simple_swarm.slugsin  out_null_root3
+minizinc swarmTest.mzn > mnzOut.txt
+cd src; make; cd ..;src/slugs --swarmTest examples/swarm_demo.slugsin  out_demo
+dot -Tpng OriginalPlan.dot > originalplan.png

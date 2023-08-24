@@ -40,7 +40,7 @@
 /* Variable declarations                                                     */
 /*---------------------------------------------------------------------------*/
 
-#define DDDMP_DEBUG_CNF   0
+#define DDDMP_DEBUG_CNF 0
 
 /*---------------------------------------------------------------------------*/
 /* Macro declarations                                                        */
@@ -54,13 +54,13 @@
 /* Static function prototypes                                                */
 /*---------------------------------------------------------------------------*/
 
-static int DddmpCuddBddArrayStoreCnf(DdManager *ddMgr, DdNode **f, int rootN, Dddmp_DecompCnfStoreType mode, int noHeader, char **varNames, int *bddIds, int *bddAuxIds, int *cnfIds, int idInitial, int edgeInTh, int pathLengthTh, char *fname, FILE *fp, int *clauseNPtr, int *varNewNPtr);
+static int DddmpCuddBddArrayStoreCnf(DdManager *ddMgr, DdNode **f, int rootN, Dddmp_DecompCnfStoreType mode, int noHeader, char **varNames, int *bddIds, int *bddAuxIds, int *cnfIds, int idInitial, int edgeInTh, int pathLengthTh, char *fname, FILE *fp, int *clauseNPtr, int *varNewNPtr, int *clauses);
 static int StoreCnfNodeByNode(DdManager *ddMgr, DdNode **f, int rootN, int *bddIds, int *cnfIds, FILE *fp, int *clauseN, int *varMax, int *rootStartLine);
 static int StoreCnfNodeByNodeRecur(DdManager *ddMgr, DdNode *f, int *bddIds, int *cnfIds, FILE *fp, int *clauseN, int *varMax);
 static int StoreCnfOneNode(DdNode *f, int idf, int vf, int idT, int idE, FILE *fp, int *clauseN, int *varMax);
-static int StoreCnfMaxtermByMaxterm(DdManager *ddMgr, DdNode **f, int rootN, int *bddIds, int *cnfIds, int idInitial, FILE *fp, int *varMax, int *clauseN, int *rootStartLine);
+static int StoreCnfMaxtermByMaxterm(DdManager *ddMgr, DdNode **f, int rootN, int *bddIds, int *cnfIds, int idInitial, FILE *fp, int *varMax, int *clauseN, int *rootStartLine, int *clauses);
 static int StoreCnfBest(DdManager *ddMgr, DdNode **f, int rootN, int *bddIds, int *cnfIds, int idInitial, FILE *fp, int *varMax, int *clauseN, int *rootStartLine);
-static void StoreCnfMaxtermByMaxtermRecur(DdManager *ddMgr, DdNode *node, int *bddIds, int *cnfIds, FILE *fp, int *list, int *clauseN, int *varMax);
+static void StoreCnfMaxtermByMaxtermRecur(DdManager *ddMgr, DdNode *node, int *bddIds, int *cnfIds, FILE *fp, int *list, int *clauseN, int *varMax, int *clauses);
 static int StoreCnfBestNotSharedRecur(DdManager *ddMgr, DdNode *node, int idf, int *bddIds, int *cnfIds, FILE *fp, int *list, int *clauseN, int *varMax);
 static int StoreCnfBestSharedRecur(DdManager *ddMgr, DdNode *node, int *bddIds, int *cnfIds, FILE *fp, int *list, int *clauseN, int *varMax);
 static int printCubeCnf(DdManager *ddMgr, DdNode *node, int *cnfIds, FILE *fp, int *list, int *varMax);
@@ -91,36 +91,35 @@ static int printCubeCnf(DdManager *ddMgr, DdNode *node, int *cnfIds, FILE *fp, i
 ******************************************************************************/
 
 int
-Dddmp_cuddBddStoreCnf (
-  DdManager *ddMgr              /* IN: DD Manager */,
-  DdNode *f                     /* IN: BDD root to be stored */,
-  Dddmp_DecompCnfStoreType mode /* IN: format selection */,
-  int noHeader                  /* IN: do not store header iff 1 */,
-  char **varNames               /* IN: array of variable names (or NULL) */,
-  int *bddIds                   /* IN: array of var ids */,
-  int *bddAuxIds                /* IN: array of BDD node Auxiliary Ids */,
-  int *cnfIds                   /* IN: array of CNF var ids */,
-  int idInitial                 /* IN: starting id for cutting variables */,
-  int edgeInTh                  /* IN: Max # Incoming Edges */,
-  int pathLengthTh              /* IN: Max Path Length */,
-  char *fname                   /* IN: file name */,
-  FILE *fp                      /* IN: pointer to the store file */,
-  int *clauseNPtr               /* OUT: number of clause stored */, 
-  int *varNewNPtr               /* OUT: number of new variable created */
-  )
-{
-  int retValue;
-  DdNode *tmpArray[1];
+Dddmp_cuddBddStoreCnf(
+    DdManager *ddMgr /* IN: DD Manager */,
+    DdNode *f /* IN: BDD root to be stored */,
+    Dddmp_DecompCnfStoreType mode /* IN: format selection */,
+    int noHeader /* IN: do not store header iff 1 */,
+    char **varNames /* IN: array of variable names (or NULL) */,
+    int *bddIds /* IN: array of var ids */,
+    int *bddAuxIds /* IN: array of BDD node Auxiliary Ids */,
+    int *cnfIds /* IN: array of CNF var ids */,
+    int idInitial /* IN: starting id for cutting variables */,
+    int edgeInTh /* IN: Max # Incoming Edges */,
+    int pathLengthTh /* IN: Max Path Length */,
+    char *fname /* IN: file name */,
+    FILE *fp /* IN: pointer to the store file */,
+    int *clauseNPtr /* OUT: number of clause stored */,
+    int *varNewNPtr /* OUT: number of new variable created */,
+    int *clauses) {
+    int retValue;
+    DdNode *tmpArray[1];
 
-  tmpArray[0] = f;
+    tmpArray[0] = f;
 
-  retValue = Dddmp_cuddBddArrayStoreCnf (ddMgr, tmpArray, 1, mode,
-    noHeader, varNames, bddIds, bddAuxIds, cnfIds, idInitial, edgeInTh,
-    pathLengthTh, fname, fp, clauseNPtr, varNewNPtr);
+    retValue = Dddmp_cuddBddArrayStoreCnf(ddMgr, tmpArray, 1, mode,
+                                          noHeader, varNames, bddIds, bddAuxIds, cnfIds, idInitial, edgeInTh,
+                                          pathLengthTh, fname, fp, clauseNPtr, varNewNPtr, clauses);
 
-  Dddmp_CheckAndReturn (retValue==DDDMP_FAILURE, "Failure.");
+    Dddmp_CheckAndReturn(retValue == DDDMP_FAILURE, "Failure.");
 
-  return (DDDMP_SUCCESS);
+    return (DDDMP_SUCCESS);
 }
 
 /**Function********************************************************************
@@ -179,26 +178,25 @@ Dddmp_cuddBddStoreCnf (
 ******************************************************************************/
 
 int
-Dddmp_cuddBddArrayStoreCnf (
-  DdManager *ddMgr              /* IN: DD Manager */,
-  DdNode **f                    /* IN: array of BDD roots to be stored */,
-  int rootN                     /* IN: # output BDD roots to be stored */,
-  Dddmp_DecompCnfStoreType mode /* IN: format selection */,
-  int noHeader                  /* IN: do not store header iff 1 */,
-  char **varNames               /* IN: array of variable names (or NULL) */,
-  int *bddIds                   /* IN: array of converted var IDs */,
-  int *bddAuxIds                /* IN: array of BDD node Auxiliary Ids */,
-  int *cnfIds                   /* IN: array of converted var IDs */,
-  int idInitial                 /* IN: starting id for cutting variables */,
-  int edgeInTh                  /* IN: Max # Incoming Edges */,
-  int pathLengthTh              /* IN: Max Path Length */,
-  char *fname                   /* IN: file name */,
-  FILE *fp                      /* IN: pointer to the store file */,
-  int *clauseNPtr               /* OUT: number of clause stored */, 
-  int *varNewNPtr               /* OUT: number of new variable created */ 
-  )
-{
-  int retValue2;
+Dddmp_cuddBddArrayStoreCnf(
+    DdManager *ddMgr /* IN: DD Manager */,
+    DdNode **f /* IN: array of BDD roots to be stored */,
+    int rootN /* IN: # output BDD roots to be stored */,
+    Dddmp_DecompCnfStoreType mode /* IN: format selection */,
+    int noHeader /* IN: do not store header iff 1 */,
+    char **varNames /* IN: array of variable names (or NULL) */,
+    int *bddIds /* IN: array of converted var IDs */,
+    int *bddAuxIds /* IN: array of BDD node Auxiliary Ids */,
+    int *cnfIds /* IN: array of converted var IDs */,
+    int idInitial /* IN: starting id for cutting variables */,
+    int edgeInTh /* IN: Max # Incoming Edges */,
+    int pathLengthTh /* IN: Max Path Length */,
+    char *fname /* IN: file name */,
+    FILE *fp /* IN: pointer to the store file */,
+    int *clauseNPtr /* OUT: number of clause stored */,
+    int *varNewNPtr /* OUT: number of new variable created */,
+    int *clauses) {
+    int retValue2;
 
 #if 0
 #ifdef DDDMP_DEBUG
@@ -214,9 +212,9 @@ Dddmp_cuddBddArrayStoreCnf (
 #endif
 #endif
 
-  retValue2 = DddmpCuddBddArrayStoreCnf (ddMgr, f, rootN, mode, noHeader,
-    varNames, bddIds, bddAuxIds, cnfIds, idInitial, edgeInTh, pathLengthTh,
-    fname, fp, clauseNPtr, varNewNPtr);
+    retValue2 = DddmpCuddBddArrayStoreCnf(ddMgr, f, rootN, mode, noHeader,
+                                          varNames, bddIds, bddAuxIds, cnfIds, idInitial, edgeInTh, pathLengthTh,
+                                          fname, fp, clauseNPtr, varNewNPtr, clauses);
 
 #if 0
 #ifdef DDDMP_DEBUG
@@ -292,301 +290,299 @@ Dddmp_cuddBddArrayStoreCnf (
 ******************************************************************************/
 
 static int
-DddmpCuddBddArrayStoreCnf (
-  DdManager *ddMgr               /* IN: DD Manager */,
-  DdNode **f                     /* IN: array of BDD roots to be stored */,
-  int rootN                      /* IN: # of output BDD roots to be stored */,
-  Dddmp_DecompCnfStoreType mode  /* IN: format selection */,
-  int noHeader                   /* IN: do not store header iff 1 */,
-  char **varNames                /* IN: array of variable names (or NULL) */,
-  int *bddIds                    /* IN: array of BDD node Ids (or NULL) */,
-  int *bddAuxIds                 /* IN: array of BDD Aux Ids (or NULL) */,
-  int *cnfIds                    /* IN: array of CNF ids (or NULL) */,
-  int idInitial                  /* IN: starting id for cutting variables */,
-  int edgeInTh                   /* IN: Max # Incoming Edges */,
-  int pathLengthTh               /* IN: Max Path Length */,
-  char *fname                    /* IN: file name */,
-  FILE *fp                       /* IN: pointer to the store file */,
-  int *clauseNPtr                /* OUT: number of clause stored */,
-  int *varNewNPtr                /* OUT: number of new variable created */ 
-  )
-{
-  DdNode *support = NULL;
-  DdNode *scan = NULL;
-  int *bddIdsInSupport = NULL;
-  int *permIdsInSupport = NULL;
-  int *rootStartLine = NULL;
-  int nVar, nVarInSupport, retValue, i, j, fileToClose;
-  int varMax, clauseN, flagVar, intStringLength;
-  int bddIdsToFree = 0;
-  int bddAuxIdsToFree = 0;
-  int cnfIdsToFree = 0;
-  int varNamesToFree = 0;
-  char intString[DDDMP_MAXSTRLEN];
-  char tmpString[DDDMP_MAXSTRLEN];
-  fpos_t posFile1, posFile2;
+DddmpCuddBddArrayStoreCnf(
+    DdManager *ddMgr /* IN: DD Manager */,
+    DdNode **f /* IN: array of BDD roots to be stored */,
+    int rootN /* IN: # of output BDD roots to be stored */,
+    Dddmp_DecompCnfStoreType mode /* IN: format selection */,
+    int noHeader /* IN: do not store header iff 1 */,
+    char **varNames /* IN: array of variable names (or NULL) */,
+    int *bddIds /* IN: array of BDD node Ids (or NULL) */,
+    int *bddAuxIds /* IN: array of BDD Aux Ids (or NULL) */,
+    int *cnfIds /* IN: array of CNF ids (or NULL) */,
+    int idInitial /* IN: starting id for cutting variables */,
+    int edgeInTh /* IN: Max # Incoming Edges */,
+    int pathLengthTh /* IN: Max Path Length */,
+    char *fname /* IN: file name */,
+    FILE *fp /* IN: pointer to the store file */,
+    int *clauseNPtr /* OUT: number of clause stored */,
+    int *varNewNPtr /* OUT: number of new variable created */,
+    int *clauses) {
+    DdNode *support = NULL;
+    DdNode *scan = NULL;
+    int *bddIdsInSupport = NULL;
+    int *permIdsInSupport = NULL;
+    int *rootStartLine = NULL;
+    int nVar, nVarInSupport, retValue, i, j, fileToClose;
+    int varMax, clauseN, flagVar, intStringLength;
+    int bddIdsToFree = 0;
+    int bddAuxIdsToFree = 0;
+    int cnfIdsToFree = 0;
+    int varNamesToFree = 0;
+    char intString[DDDMP_MAXSTRLEN];
+    char tmpString[DDDMP_MAXSTRLEN];
+    fpos_t posFile1, posFile2;
 
-  /*---------------------------- Set Initial Values -------------------------*/
+    /*---------------------------- Set Initial Values -------------------------*/
 
-  support = scan = NULL;
-  bddIdsInSupport = permIdsInSupport = rootStartLine = NULL;
-  nVar = ddMgr->size;
-  fileToClose = 0;
-  sprintf (intString, "%d", INT_MAX);
-  intStringLength = strlen (intString);
+    support = scan = NULL;
+    bddIdsInSupport = permIdsInSupport = rootStartLine = NULL;
+    nVar = ddMgr->size;
+    fileToClose = 0;
+    sprintf(intString, "%d", INT_MAX);
+    intStringLength = strlen(intString);
 
-  /*---------- Check if File needs to be opened in the proper mode ----------*/
+    /*---------- Check if File needs to be opened in the proper mode ----------*/
 
-  if (fp == NULL) {
-    fp = fopen (fname, "w");
-    Dddmp_CheckAndGotoLabel (fp==NULL, "Error opening file.",
-      failure);
-    fileToClose = 1;
-  }
+    if (fp == NULL) {
+        fp = fopen(fname, "w");
+        Dddmp_CheckAndGotoLabel(fp == NULL, "Error opening file.",
+                                failure);
+        fileToClose = 1;
+    }
 
-  /*--------- Generate Bdd LOCAL IDs and Perm IDs and count them ------------*/
+    /*--------- Generate Bdd LOCAL IDs and Perm IDs and count them ------------*/
 
-  /* BDD Ids */
-  bddIdsInSupport = DDDMP_ALLOC (int, nVar);
-  Dddmp_CheckAndGotoLabel (bddIdsInSupport==NULL, "Error allocating memory.",
-    failure);
-  /* BDD PermIds */
-  permIdsInSupport = DDDMP_ALLOC (int, nVar);
-  Dddmp_CheckAndGotoLabel (permIdsInSupport==NULL, "Error allocating memory.",
-    failure);
-  /* Support Size (Number of BDD Ids-PermIds */
-  nVarInSupport = 0;
+    /* BDD Ids */
+    bddIdsInSupport = DDDMP_ALLOC(int, nVar);
+    Dddmp_CheckAndGotoLabel(bddIdsInSupport == NULL, "Error allocating memory.",
+                            failure);
+    /* BDD PermIds */
+    permIdsInSupport = DDDMP_ALLOC(int, nVar);
+    Dddmp_CheckAndGotoLabel(permIdsInSupport == NULL, "Error allocating memory.",
+                            failure);
+    /* Support Size (Number of BDD Ids-PermIds */
+    nVarInSupport = 0;
 
-  for (i=0; i<nVar; i++) {
-    bddIdsInSupport[i] = permIdsInSupport[i] = (-1);
-  }
+    for (i = 0; i < nVar; i++) {
+        bddIdsInSupport[i] = permIdsInSupport[i] = (-1);
+    }
 
-  /* 
+    /* 
    *  Take the union of the supports of each output function.
    *  Skip NULL functions.
    */
 
-
-  for (i=0; i<rootN; i++) {
-    if (f[i] == NULL) {
-      continue;
-    }
-    support = Cudd_Support (ddMgr, f[i]);
-    Dddmp_CheckAndGotoLabel (support==NULL, "NULL support returned.",
-      failure);
-    cuddRef (support);
-    scan = support;
-    while (!cuddIsConstant(scan)) {
-      /* Count Number of Variable in the Support */
-      nVarInSupport++;
-      /* Set Ids and Perm-Ids */
-      bddIdsInSupport[scan->index] = scan->index;
-      permIdsInSupport[scan->index] = ddMgr->perm[scan->index];
-      scan = cuddT (scan);
-    }
-    Cudd_RecursiveDeref (ddMgr, support);
-  }
-  /* so that we do not try to free it in case of failure */
-  support = NULL;
-
-  /*---------------------------- Start HEADER -------------------------------*/
-
-  if (noHeader==0) {
-
-    retValue = fprintf (fp,
-      "c # BDD stored by the DDDMP tool in CNF format\n");
-    Dddmp_CheckAndGotoLabel (retValue==EOF, "Error writing on file.",
-      failure);
-    fprintf (fp, "c #\n");
-  }
-
-  /*-------------------- Generate Bdd IDs IFF necessary ---------------------*/
-
-  if (bddIds == NULL) {
-    if (noHeader==0) {
-      fprintf (fp, "c # Warning: BDD IDs missing ... evaluating them.\n");
-      fprintf (fp, "c # \n");
-      fflush (fp);
-    }
-
-    bddIdsToFree = 1;
-    bddIds = DDDMP_ALLOC (int, nVar);
-    Dddmp_CheckAndGotoLabel (bddIds==NULL, "Error allocating memory.",
-      failure);
-
-    /* Get BDD-IDs Directly from Cudd Manager */
-    for (i=0; i<nVar; i++) {
-      bddIds[i] = i;
-    }   
-  } /* end if bddIds == NULL */
-
-  /*------------------ Generate AUX BDD IDs IF necessary --------------------*/
-
-  if (bddAuxIds == NULL) {
-    if (noHeader==0) {
-      fprintf (fp, "c # Warning: AUX IDs missing ... equal to BDD IDs.\n");
-      fprintf (fp, "c #\n");
-      fflush (fp);
-    }
-
-    bddAuxIdsToFree = 1;
-    bddAuxIds = DDDMP_ALLOC (int, nVar);
-    Dddmp_CheckAndGotoLabel (bddAuxIds==NULL, "Error allocating memory.",
-      failure);
-
-    for (i=0; i<nVar; i++) {
-      bddAuxIds[i] = bddIds[i];
-    }
-  } /* end if cnfIds == NULL */
-
-  /*------------------- Generate CNF IDs IF necessary -----------------------*/
-
-  if (cnfIds == NULL) {
-    if (noHeader==0) {
-      fprintf (fp, "c # Warning: CNF IDs missing ... equal to BDD IDs.\n");
-      fprintf (fp, "c #\n");
-      fflush (fp);
-    }
-
-    cnfIdsToFree = 1;
-    cnfIds = DDDMP_ALLOC (int, nVar);
-    Dddmp_CheckAndGotoLabel (cnfIds==NULL, "Error allocating memory.",
-      failure);
-
-    for (i=0; i<nVar; i++) {
-      cnfIds[i] = bddIds[i] + 1;
-    }
-  } /* end if cnfIds == NULL */
-
-  /*------------------ Generate Var Names IF necessary ----------------------*/
-
-  flagVar = 0;
-  if (varNames == NULL) {
-    if (noHeader==0) {
-      fprintf (fp,
-        "c # Warning: null variable names ... create DUMMY names.\n");
-      fprintf (fp, "c #\n");
-      fflush (stderr);
-    }
-
-    varNamesToFree = 1;
-    varNames = DDDMP_ALLOC (char *, nVar);
-    for (i=0; i<nVar; i++) {
-       varNames[i] = NULL;       
-    }
-    Dddmp_CheckAndGotoLabel (varNames==NULL, "Error allocating memory.",
-      failure);
-
-    flagVar = 1;
-  } else {
-    /* Protect the user also from partially loaded varNames array !!! */
-    for (i=0; i<nVar && flagVar==0; i++) {
-      if (varNames[i] == NULL) {
-        flagVar = 1;
-      }
-    }
-  }
-
-  if (flagVar == 1) {
-    for (i=0; i<nVar; i++) {
-      if (varNames[i] == NULL) {
-        sprintf (tmpString, "DUMMY%d", bddIds[i]);
-        varNames[i] = DDDMP_ALLOC (char, (strlen (tmpString)+1));
-        strcpy (varNames[i], tmpString);
-      }
-    }
-  }
-
-  /*----------------------- Set Initial ID  IF necessary --------------------*/
-
-  if (idInitial <= 0) {
-    idInitial = nVar + 1;
-  }
-
-  /*--------------------------- Continue HEADER -----------------------------*/
-
-  if (noHeader==0) {
-    fprintf (fp, "c .ver %s\n", DDDMP_VERSION);
-    fprintf (fp, "c .nnodes %d\n", Cudd_SharingSize (f, rootN));
-    fprintf (fp, "c .nvars %d\n", nVar);
-    fprintf (fp, "c .nsuppvars %d\n", nVarInSupport);
-
-    /* Support Variable Names */
-    if (varNames != NULL) {
-      fprintf (fp, "c .suppvarnames");
-      for (i=0; i<nVar; i++) {
-        if (bddIdsInSupport[i] >= 0) {
-          fprintf (fp, " %s", varNames[i]);
+    for (i = 0; i < rootN; i++) {
+        if (f[i] == NULL) {
+            continue;
         }
-      }
-      fprintf (fp, "\n");
+        support = Cudd_Support(ddMgr, f[i]);
+        Dddmp_CheckAndGotoLabel(support == NULL, "NULL support returned.",
+                                failure);
+        cuddRef(support);
+        scan = support;
+        while (!cuddIsConstant(scan)) {
+            /* Count Number of Variable in the Support */
+            nVarInSupport++;
+            /* Set Ids and Perm-Ids */
+            bddIdsInSupport[scan->index] = scan->index;
+            permIdsInSupport[scan->index] = ddMgr->perm[scan->index];
+            scan = cuddT(scan);
+        }
+        Cudd_RecursiveDeref(ddMgr, support);
+    }
+    /* so that we do not try to free it in case of failure */
+    support = NULL;
+
+    /*---------------------------- Start HEADER -------------------------------*/
+
+    if (noHeader == 0) {
+
+        retValue = fprintf(fp,
+                           "c # BDD stored by the DDDMP tool in CNF format\n");
+        Dddmp_CheckAndGotoLabel(retValue == EOF, "Error writing on file.",
+                                failure);
+        fprintf(fp, "c #\n");
     }
 
-    /* Ordered Variable Names */
-    if (varNames != NULL) {
-      fprintf (fp, "c .orderedvarnames");
-      for (i=0; i<nVar; i++) {
-        fprintf (fp, " %s", varNames[i]);
-      }
-      fprintf (fp, "\n");
+    /*-------------------- Generate Bdd IDs IFF necessary ---------------------*/
+
+    if (bddIds == NULL) {
+        if (noHeader == 0) {
+            fprintf(fp, "c # Warning: BDD IDs missing ... evaluating them.\n");
+            fprintf(fp, "c # \n");
+            fflush(fp);
+        }
+
+        bddIdsToFree = 1;
+        bddIds = DDDMP_ALLOC(int, nVar);
+        Dddmp_CheckAndGotoLabel(bddIds == NULL, "Error allocating memory.",
+                                failure);
+
+        /* Get BDD-IDs Directly from Cudd Manager */
+        for (i = 0; i < nVar; i++) {
+            bddIds[i] = i;
+        }
+    } /* end if bddIds == NULL */
+
+    /*------------------ Generate AUX BDD IDs IF necessary --------------------*/
+
+    if (bddAuxIds == NULL) {
+        if (noHeader == 0) {
+            fprintf(fp, "c # Warning: AUX IDs missing ... equal to BDD IDs.\n");
+            fprintf(fp, "c #\n");
+            fflush(fp);
+        }
+
+        bddAuxIdsToFree = 1;
+        bddAuxIds = DDDMP_ALLOC(int, nVar);
+        Dddmp_CheckAndGotoLabel(bddAuxIds == NULL, "Error allocating memory.",
+                                failure);
+
+        for (i = 0; i < nVar; i++) {
+            bddAuxIds[i] = bddIds[i];
+        }
+    } /* end if cnfIds == NULL */
+
+    /*------------------- Generate CNF IDs IF necessary -----------------------*/
+
+    if (cnfIds == NULL) {
+        if (noHeader == 0) {
+            fprintf(fp, "c # Warning: CNF IDs missing ... equal to BDD IDs.\n");
+            fprintf(fp, "c #\n");
+            fflush(fp);
+        }
+
+        cnfIdsToFree = 1;
+        cnfIds = DDDMP_ALLOC(int, nVar);
+        Dddmp_CheckAndGotoLabel(cnfIds == NULL, "Error allocating memory.",
+                                failure);
+
+        for (i = 0; i < nVar; i++) {
+            cnfIds[i] = bddIds[i] + 1;
+        }
+    } /* end if cnfIds == NULL */
+
+    /*------------------ Generate Var Names IF necessary ----------------------*/
+
+    flagVar = 0;
+    if (varNames == NULL) {
+        if (noHeader == 0) {
+            fprintf(fp,
+                    "c # Warning: null variable names ... create DUMMY names.\n");
+            fprintf(fp, "c #\n");
+            fflush(stderr);
+        }
+
+        varNamesToFree = 1;
+        varNames = DDDMP_ALLOC(char *, nVar);
+        for (i = 0; i < nVar; i++) {
+            varNames[i] = NULL;
+        }
+        Dddmp_CheckAndGotoLabel(varNames == NULL, "Error allocating memory.",
+                                failure);
+
+        flagVar = 1;
+    } else {
+        /* Protect the user also from partially loaded varNames array !!! */
+        for (i = 0; i < nVar && flagVar == 0; i++) {
+            if (varNames[i] == NULL) {
+                flagVar = 1;
+            }
+        }
     }
 
-    /* BDD Variable Ids */
-    fprintf (fp, "c .ids ");
-    for (i=0; i<nVar; i++) {
-      if (bddIdsInSupport[i] >= 0) {
-        fprintf (fp, " %d", bddIdsInSupport[i]);
-      }
+    if (flagVar == 1) {
+        for (i = 0; i < nVar; i++) {
+            if (varNames[i] == NULL) {
+                sprintf(tmpString, "DUMMY%d", bddIds[i]);
+                varNames[i] = DDDMP_ALLOC(char, (strlen(tmpString) + 1));
+                strcpy(varNames[i], tmpString);
+            }
+        }
     }
-    fprintf (fp, "\n");
 
-    /* BDD Variable Permutation Ids */
-    fprintf (fp, "c .permids ");
-    for (i=0; i<nVar; i++) {
-      if (bddIdsInSupport[i] >= 0) {
-        fprintf (fp, " %d", permIdsInSupport[i]);
-      }
+    /*----------------------- Set Initial ID  IF necessary --------------------*/
+
+    if (idInitial <= 0) {
+        idInitial = nVar + 1;
     }
-    fprintf (fp, "\n");
 
-    /* BDD Variable Auxiliary Ids */
-    fprintf (fp, "c .auxids ");
-    for (i=0; i<nVar; i++) {
-      if (bddIdsInSupport[i] >= 0) {
-        fprintf (fp, " %d", bddAuxIds[i]);
-      }
-    }
-    fprintf (fp, "\n");
+    /*--------------------------- Continue HEADER -----------------------------*/
 
-    /* CNF Ids */
-    fprintf (fp, "c .cnfids ");
-    for (i=0; i<nVar; i++) {
-      if (bddIdsInSupport[i] >= 0) {
-        fprintf (fp, " %d", cnfIds[i]);
-      }
-    }
-    fprintf (fp, "\n");
+    if (noHeader == 0) {
+        fprintf(fp, "c .ver %s\n", DDDMP_VERSION);
+        fprintf(fp, "c .nnodes %d\n", Cudd_SharingSize(f, rootN));
+        fprintf(fp, "c .nvars %d\n", nVar);
+        fprintf(fp, "c .nsuppvars %d\n", nVarInSupport);
 
-    /* Number of Roots */
-    fprintf (fp, "c .nroots %d", rootN);
-    fprintf (fp, "\n");
+        /* Support Variable Names */
+        if (varNames != NULL) {
+            fprintf(fp, "c .suppvarnames");
+            for (i = 0; i < nVar; i++) {
+                if (bddIdsInSupport[i] >= 0) {
+                    fprintf(fp, " %s", varNames[i]);
+                }
+            }
+            fprintf(fp, "\n");
+        }
 
-    /* Root Starting Line */
-    fgetpos (fp, &posFile1);
-    fprintf (fp, "c .rootids");
-    for (i=0; i<rootN; i++) {
-      for (j=0; j<intStringLength+1; j++) {
-        retValue = fprintf (fp, " ");
-      }
-    }
-    retValue = fprintf (fp, "\n");
-    fflush (fp);
+        /* Ordered Variable Names */
+        if (varNames != NULL) {
+            fprintf(fp, "c .orderedvarnames");
+            for (i = 0; i < nVar; i++) {
+                fprintf(fp, " %s", varNames[i]);
+            }
+            fprintf(fp, "\n");
+        }
 
-  } /* End of noHeader check */
+        /* BDD Variable Ids */
+        fprintf(fp, "c .ids ");
+        for (i = 0; i < nVar; i++) {
+            if (bddIdsInSupport[i] >= 0) {
+                fprintf(fp, " %d", bddIdsInSupport[i]);
+            }
+        }
+        fprintf(fp, "\n");
 
-  /*------------ Select Mode and Print Number of Tmp Var Created ------------*/
+        /* BDD Variable Permutation Ids */
+        fprintf(fp, "c .permids ");
+        for (i = 0; i < nVar; i++) {
+            if (bddIdsInSupport[i] >= 0) {
+                fprintf(fp, " %d", permIdsInSupport[i]);
+            }
+        }
+        fprintf(fp, "\n");
 
-  switch (mode) {
+        /* BDD Variable Auxiliary Ids */
+        fprintf(fp, "c .auxids ");
+        for (i = 0; i < nVar; i++) {
+            if (bddIdsInSupport[i] >= 0) {
+                fprintf(fp, " %d", bddAuxIds[i]);
+            }
+        }
+        fprintf(fp, "\n");
+
+        /* CNF Ids */
+        fprintf(fp, "c .cnfids ");
+        for (i = 0; i < nVar; i++) {
+            if (bddIdsInSupport[i] >= 0) {
+                fprintf(fp, " %d", cnfIds[i]);
+            }
+        }
+        fprintf(fp, "\n");
+
+        /* Number of Roots */
+        fprintf(fp, "c .nroots %d", rootN);
+        fprintf(fp, "\n");
+
+        /* Root Starting Line */
+        fgetpos(fp, &posFile1);
+        fprintf(fp, "c .rootids");
+        for (i = 0; i < rootN; i++) {
+            for (j = 0; j < intStringLength + 1; j++) {
+                retValue = fprintf(fp, " ");
+            }
+        }
+        retValue = fprintf(fp, "\n");
+        fflush(fp);
+
+    } /* End of noHeader check */
+
+    /*------------ Select Mode and Print Number of Tmp Var Created ------------*/
+
+    switch (mode) {
     case DDDMP_CNF_MODE_NODE:
       *varNewNPtr = idInitial;
       *varNewNPtr = DddmpNumberDdNodesCnf (ddMgr, f, rootN, cnfIds, idInitial)
@@ -602,7 +598,7 @@ DddmpCuddBddArrayStoreCnf (
       *varNewNPtr = DddmpDdNodesCountEdgesAndNumber (ddMgr, f, rootN,
         edgeInTh, pathLengthTh, cnfIds, idInitial) - *varNewNPtr;
       break;
-  }
+    }
 
   /*------------ Print Space for Number of Variable and Clauses -------------*/
 
@@ -638,9 +634,9 @@ DddmpCuddBddArrayStoreCnf (
       DddmpUnnumberDdNodesCnf (ddMgr, f, rootN);
       break;
     case DDDMP_CNF_MODE_MAXTERM:
-      StoreCnfMaxtermByMaxterm (ddMgr, f, rootN, bddIds, cnfIds, idInitial,
-        fp, &varMax, &clauseN, rootStartLine);
-      break;
+        StoreCnfMaxtermByMaxterm(ddMgr, f, rootN, bddIds, cnfIds, idInitial,
+                                 fp, &varMax, &clauseN, rootStartLine, clauses);
+        break;
     default:
       Dddmp_Warning (1, "Wrong DDDMP Store Mode. Force DDDMP_MODE_BEST.");
     case DDDMP_CNF_MODE_BEST:
@@ -747,7 +743,7 @@ DddmpCuddBddArrayStoreCnf (
     }
 
     return (DDDMP_FAILURE);
-}
+  }
 
 /*---------------------------------------------------------------------------*/
 /* Definition of static functions                                            */
@@ -1092,50 +1088,49 @@ StoreCnfOneNode (
 ******************************************************************************/
 
 static int
-StoreCnfMaxtermByMaxterm (
-  DdManager *ddMgr    /* IN: DD Manager */,
-  DdNode **f          /* IN: array of BDDs to store */,
-  int rootN           /* IN: number of BDDs in the array */,
-  int *bddIds         /* IN: BDD Identifiers */,
-  int *cnfIds         /* IN: corresponding CNF Identifiers */,
-  int idInitial       /* IN: initial value for numbering new CNF variables */,
-  FILE *fp            /* IN: file pointer */,
-  int *varMax        /* OUT: maximum identifier of the variables created */,
-  int *clauseN       /* OUT: number of stored clauses */,
-  int *rootStartLine /* OUT: line where root starts */
-  )
-{
-  int i, j, *list;
-  (void) idInitial; /* avoid warning */
+StoreCnfMaxtermByMaxterm(
+    DdManager *ddMgr /* IN: DD Manager */,
+    DdNode **f /* IN: array of BDDs to store */,
+    int rootN /* IN: number of BDDs in the array */,
+    int *bddIds /* IN: BDD Identifiers */,
+    int *cnfIds /* IN: corresponding CNF Identifiers */,
+    int idInitial /* IN: initial value for numbering new CNF variables */,
+    FILE *fp /* IN: file pointer */,
+    int *varMax /* OUT: maximum identifier of the variables created */,
+    int *clauseN /* OUT: number of stored clauses */,
+    int *rootStartLine /* OUT: line where root starts */,
+    int *clauses) {
+    int i, j, *list;
+    (void) idInitial; /* avoid warning */
 
-  list = DDDMP_ALLOC (int, ddMgr->size);
-  if (list == NULL) {
-    ddMgr->errorCode = CUDD_MEMORY_OUT;
-    return (DDDMP_FAILURE);
-  }
+    list = DDDMP_ALLOC(int, ddMgr->size);
+    if (list == NULL) {
+        ddMgr->errorCode = CUDD_MEMORY_OUT;
+        return (DDDMP_FAILURE);
+    }
 
-  for (i=0; i<rootN; i++) {
-    if (f[i] != NULL) {
-      if (!cuddIsConstant(Cudd_Regular (f[i]))) {
-        for (j=0; j<ddMgr->size; j++) {
-          list[j] = 2;
-        }
+    for (i = 0; i < rootN; i++) {
+        if (f[i] != NULL) {
+            if (!cuddIsConstant(Cudd_Regular(f[i]))) {
+                for (j = 0; j < ddMgr->size; j++) {
+                    list[j] = 2;
+                }
 
-        /*
+                /*
          *  Set Starting Line for this Root
          */
 
-        rootStartLine[i] = *clauseN + 1;
+                rootStartLine[i] = *clauseN + 1;
 
-        StoreCnfMaxtermByMaxtermRecur (ddMgr, f[i], bddIds, cnfIds, fp,
-          list, clauseN, varMax);
-      }
+                StoreCnfMaxtermByMaxtermRecur(ddMgr, f[i], bddIds, cnfIds, fp,
+                                              list, clauseN, varMax, clauses);
+            }
+        }
     }
-  }
 
-  FREE (list);
+    FREE(list);
 
-  return (1);
+    return (1);
 }
 
 /**Function********************************************************************
@@ -1234,79 +1229,86 @@ StoreCnfBest (
 ******************************************************************************/
 
 static void
-StoreCnfMaxtermByMaxtermRecur (
-  DdManager *ddMgr  /* IN: DD Manager */,
-  DdNode *node      /* IN: BDD to store */,
-  int *bddIds       /* IN: BDD identifiers */,
-  int *cnfIds       /* IN: corresponding CNF identifiers */,
-  FILE *fp          /* IN: file pointer */,
-  int *list         /* IN: temporary array to store cubes */,
-  int *clauseN     /* OUT: number of stored clauses */,
-  int *varMax      /* OUT: maximum identifier of the variables created */
-  )
-{
-  DdNode *N, *Nv, *Nnv;
-  int retValue, index;
- 
-  N = Cudd_Regular (node);
+StoreCnfMaxtermByMaxtermRecur(
+    DdManager *ddMgr /* IN: DD Manager */,
+    DdNode *node /* IN: BDD to store */,
+    int *bddIds /* IN: BDD identifiers */,
+    int *cnfIds /* IN: corresponding CNF identifiers */,
+    FILE *fp /* IN: file pointer */,
+    int *list /* IN: temporary array to store cubes */,
+    int *clauseN /* OUT: number of stored clauses */,
+    int *varMax /* OUT: maximum identifier of the variables created */,
+    int *clauses) {
+    DdNode *N, *Nv, *Nnv;
+    int retValue, index;
 
-  /*
+    N = Cudd_Regular(node);
+
+    /*
    *  Terminal case: Print one cube based on the current recursion
    */
 
-  if (cuddIsConstant (N)) {
-    retValue = printCubeCnf (ddMgr, node, cnfIds, fp, list, varMax);
-    if (retValue == DDDMP_SUCCESS) {
-      fprintf (fp, "0\n");
-      *clauseN = *clauseN + 1;
+    if (cuddIsConstant(N)) {
+        // add clause to clauses
+        if ((*clauseN) * (ddMgr->size+1) >= 1000000){
+          printf("cudd dump cnf exceed buffer\r\n");
+        }
+        for (int i = 0; i < ddMgr->size; i++) {
+            clauses[(*clauseN) * ddMgr->size + i] = list[i];
+            // printf("%d ", list[i]);
+        }
+        retValue = printCubeCnf(ddMgr, node, cnfIds, fp, list, varMax);
+        if (retValue == DDDMP_SUCCESS) {
+            fprintf(fp, "0\n");
+            *clauseN = *clauseN + 1;
+        }
+        return;
     }
-    return;
-  }
 
-  /*
+    /*
    *  NON Terminal case: Recur
    */
 
-  Nv  = cuddT (N);
-  Nnv = cuddE (N);
-  if (Cudd_IsComplement (node)) {
-    Nv  = Cudd_Not (Nv);
-    Nnv = Cudd_Not (Nnv);
-  }
-  index = N->index;
+    Nv = cuddT(N);
+    Nnv = cuddE(N);
+    if (Cudd_IsComplement(node)) {
+        Nv = Cudd_Not(Nv);
+        Nnv = Cudd_Not(Nnv);
+    }
+    index = N->index;
 
-  /*
+    /*
    *  StQ 06.05.2003
    *  Perform the optimization:
    *  f = (a + b)' = (a') ^ (a + b') = (a') ^ (b')
    *  i.e., if the THEN node is the constant ZERO then that variable
    *  can be forgotten (list[index] = 2) for subsequent ELSE cubes
    */
-  if (cuddIsConstant (Cudd_Regular (Nv)) &&  Nv != ddMgr->one) {
-    list[index] = 2;
-  } else {
-    list[index] = 0;
-  }
-  StoreCnfMaxtermByMaxtermRecur (ddMgr, Nnv, bddIds, cnfIds, fp, list,
-    clauseN, varMax);
+    if (cuddIsConstant(Cudd_Regular(Nv)) && Nv != ddMgr->one) {
+        list[index] = 2;
+    } else {
+        list[index] = 0;
+    }
+    StoreCnfMaxtermByMaxtermRecur(ddMgr, Nnv, bddIds, cnfIds, fp, list,
+                                  clauseN, varMax, clauses);
 
-  /*
+    /*
    *  StQ 06.05.2003
    *  Perform the optimization:
    *  f = a ^ b = (a) ^ (a' + b) = (a) ^ (b)
    *  i.e., if the ELSE node is the constant ZERO then that variable
    *  can be forgotten (list[index] = 2) for subsequent THEN cubes
    */
-  if (cuddIsConstant (Cudd_Regular (Nnv)) &&  Nnv != ddMgr->one) {
+    if (cuddIsConstant(Cudd_Regular(Nnv)) && Nnv != ddMgr->one) {
+        list[index] = 2;
+    } else {
+        list[index] = 1;
+    }
+    StoreCnfMaxtermByMaxtermRecur(ddMgr, Nv, bddIds, cnfIds, fp, list,
+                                  clauseN, varMax, clauses);
     list[index] = 2;
-  } else {
-    list[index] = 1;
-  }
-  StoreCnfMaxtermByMaxtermRecur (ddMgr, Nv, bddIds, cnfIds, fp, list,
-    clauseN, varMax);
-  list[index] = 2;
 
-  return;
+    return;
 }
 
 /**Function********************************************************************
@@ -1558,7 +1560,8 @@ printCubeCnf (
       if (list[i] == 0) {
         retValue = DDDMP_SUCCESS;
         (void) fprintf (fp, "%d ", cnfIds[i]);
-	*varMax = GET_MAX(*varMax, cnfIds[i]);
+        // printf("%d ", cnfIds[i]);
+        *varMax = GET_MAX(*varMax, cnfIds[i]);
       } else {
         if (list[i] == 1) {
           retValue = DDDMP_SUCCESS;
