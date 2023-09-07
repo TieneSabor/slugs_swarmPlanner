@@ -7,7 +7,6 @@ void
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::init(std::list<std::string> &filenames) {
     // build the regional map
     BF RMSG = parseRegionMap(filenames);
-    // std::cout << "?" << std::endl;
     // parse all GR1 specs except for the edge safety guarantee
     T::init(filenames);
     if (filenames.size() == 0) {
@@ -45,7 +44,6 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::getRMSG() {
     // slug post-var id = 2*RM id in cvz + 1
     // add edges as safety guarantee
     BF RMSG = mgr.constantTrue();
-    // std::cout << variables.size() << std::endl;
     for (int i = 0; i < pcvz->getRegionNum(); i++) {
         std::vector<int> inIds = pcvz->getRegionInNeighborByIndex(i);
         BF inSG = !variables[2 * i + 1];
@@ -317,29 +315,16 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetySys2IntStateRec(BF F, s
     // Boundary Condition: If edgePred is empty, return
     if (F.isFalse()) {
         literals.push_back(literal);
-        // std::cout << "OK" << std::endl;
         return;
     }
     if (edgePred.size() == 0) {
-        // literals.push_back(literal);
         // BF EAF = F.ExistAbstract(varCubePre);
-        // BF EAF = F;
         // printStrategyBDD(EAF, "remainBDD" + std::to_string(literals.size()));
         // if (!EAF.isTrue()) {
         //     std::cout << "Bad" << std::endl;
         // } else {
         //     // literals.push_back(literal);
         //     std::cout << "?" << std::endl;
-        // }
-        // literals.push_back(literal);
-        // if (F.isFalse()) {
-        //     literals.push_back(literal);
-        //     std::cout << "F, " << literals.size() << std::endl;
-        //     } else {
-        //         std::cout << "T, " << literals.size() << std::endl;
-        // }
-        // for (int i = 0; i < literal.size(); i++) {
-        //     std::cout << literal[i].first << " ";
         // }
         return;
     }
@@ -351,36 +336,18 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetySys2IntStateRec(BF F, s
     // If so, do the Boole Expansion: F = ("Left") (F(e=0) + e)*("Right") (F(e=1) + (!e))
     if (eid != -1) {
         std::vector<std::pair<int, bool>> leftLit, rightLit;
-        // std::vector<BF> eBF;
-        // eBF.push_back(variables[e.first * 2]);
-        // eBF.push_back(variables[e.second * 2]);
-        // BFBddVarCube eCube = mgr.computeCube(eBF);
-        // BF leftF = (F & (!(variables[e.first * 2] & variables[e.second * 2]))).ExistAbstract(eCube);
-        // BF rightF = (F & ((variables[e.first * 2] & variables[e.second * 2]))).ExistAbstract(eCube);
         BF leftF = (F & (!(variables[e.first * 2] & variables[e.second * 2])));
         BF rightF = F;   //(F & ((variables[e.first * 2] & variables[e.second * 2])));
-        // if (leftF == rightF) {
-        //     safetySys2IntStateRec(leftF, edgePred, literal, literals);
-        // } else {
         leftLit = literal;
         rightLit = literal;
         leftLit.push_back(std::make_pair(eid, false));
         rightLit.push_back(std::make_pair(eid, true));
         safetySys2IntStateRec(leftF, nEP, leftLit, literals);
         safetySys2IntStateRec(rightF, nEP, rightLit, literals);
-        // }
     }
     // If not, pass: F = F(e=0)*(!e)
     else {
-        // literal.push_back(-eid);
-        // std::vector<BF> eBF;
-        // eBF.push_back(variables[e.first * 2]);
-        // eBF.push_back(variables[e.second * 2]);
-        // BFBddVarCube eCube = mgr.computeCube(eBF);
         BF nextF = (F & (!(variables[e.first * 2] & variables[e.second * 2])));
-        // std::vector<std::pair<int, bool>> nextLit;
-        // nextLit.push_back(std::make_pair(eid, false));
-        // BF nextF = F;
         safetySys2IntStateRec(nextF, nEP, literal, literals);
     }
 }
@@ -409,7 +376,6 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetySys2IntState() {
     // create intermediate state predicate variables in BF manager
     // Not required because for now we only care about CNF
     // Create a list of edges to process recursively, including those not in region map
-    // std::cout << "Here" << std::endl;
     std::vector<std::pair<int, int>> edges;
     for (int i = 0; i < pcvz->getRegionNum(); i++) {
         for (int j = i; j < pcvz->getRegionNum(); j++) {
@@ -538,26 +504,6 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                 return;
             }
         }
-
-        // check for available increment to each subswarm
-        // int maxSubswarmNumb = maxNs.size();   // subswarm number <= region number is a fair guess
-        // std::vector<int> subswarmRes(maxSubswarmNumb);
-        // std::vector<std::vector<int>> subswarmAsgn(maxSubswarmNumb);
-        // int subid = 0;
-        // auto edgeMax = pcvz->getEdgeMax();
-        // // initialize the subswarm with the first transition
-        // for (int i = 0; i < plan[0].size(); i++) {
-        //     if (plan[0][i] > 0) {
-        //         subswarmRes[subid] = edgeMax[i] - plan[0][i];
-        //         auto ft = pcvz->regionFromToByEdgeIndex(i);
-        //         subswarmAsgn[subid].push_back(ft.first);
-        //         subswarmAsgn[subid].push_back(ft.second);
-        //         subid++;
-        //     }
-        // }
-        // int maxSubNum = subid;
-        // subid = 0;
-        // not done
 
         // calculate the fixpoint for the state
         BF raTranRM = getRMSG();
@@ -938,127 +884,72 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
                  livenessGuarantees[i]);
         }
     }
-
-    // make strategy BDD a set of CNF clauses
-    // int goalNumb = 0;
-    // combinedStrategy = positionalStrategiesForTheIndividualGoals[goalNumb];
-    // std::string cnffilename = filename + "_cnf";
-    // std::string header_cnf = "";
-    // int clauseBufferSize = 100000;
-    // int clausesInCNFIndex[clauseBufferSize], clauseN = 0, varSize = 0;
-    // mgr.writeBDDToCNFFile(cnffilename.c_str(), header_cnf,
-    //                       combinedStrategy, variables, variableNames, clausesInCNFIndex, clauseN, varSize);
-
-    // // Build miniZinc Converter
-    // std::cout << "=========<Add strategy as clauses>==========" << std::endl;
-    // // add clauses to the converter
-    // for (int i = 0; i < clauseN; i++) {
-    //     pcvz->newClause();
-    //     // std::cout << "Clause #" << i << " ";
-    //     for (int j = 0; j < varSize; j++) {
-    //         // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
-    //         std::string lit = variableNames[j];
-    //         switch (clausesInCNFIndex[i * varSize + j]) {
-    //         case 0:
-    //             pcvz->addLiteral2LastClauseByName(lit);
-    //             break;
-    //         case 1:
-    //             pcvz->addLiteral2LastClauseByName("-" + lit);
-    //             break;
-    //         case 2:
-    //             break;
-    //         default:
-    //             std::cout << "Unknown literal value: " << clausesInCNFIndex[i * varSize + j] << std::endl;
-    //         }
-    //     }
-    //     // std::cout << std::endl;
-    // }
-    // print to file or terminal
-    // pcvz->printMiniZinc(toTerminal, "swarmTest", 2);
     // solve the CP for only one liveness guarantee
     // safetySys2IntState();
     std::cout << "=========<Generate an original plan by CP>==========" << std::endl;
     computeExplicitStrategy(positionalStrategiesForTheIndividualGoals);
     std::vector<std::vector<int>> dum;
     // updateL2G();
-    // int ly = checkLayer(initState, 0);
-    // std::cout << "Init state is at " << ly << "th layer" << std::endl;
-    // pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", ly, dum, true);
-    // pcvz->printPatch2Dot("OriginalPlan");
-    // auto plan = pcvz->getPatch();
-    // pcvz->testPatchWithEdgeLiterals();
-    // return;
-    // build patcher for the one live. guar. case
-    std::cout << "=========<Start building the patch>==========" << std::endl;
-    // int tMax = plan.size() - 1;   // max transition id
-    // patcher p4Plan;
-    // p4Plan.newGoalSuffix();
-    // for (int i = 0; i < plan.size(); i++) {
-    //     p4Plan.addTransitionSuffix(plan[i], 0);
-    // }
-    // p4Plan.printTransitions();
-    // locate the patch start-end
 
-    // check for reassignment
-    reallocation();
+    while (true) {
+        std::cout << "=========<Start building the patch>==========" << std::endl;
 
-    std::cout << "=========<Do an initial guess on Patch Horizon>==========" << std::endl;
-    // If there is any removal of an edge
-    if ((rmvEdgeFrom.size() != 0) && (rmvEdgeTo.size() != 0)) {
-        bool directed = false;
-        if (rmvEdgeFrom == rmvEdgeTo) {
-            directed = true;
-            pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
-            int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
-            p4Plan.updateEdge(true, rmvEdgeID);
+        // check for reassignment
+        reallocation();
+
+        std::cout << "=========<Do an initial guess on Patch Horizon>==========" << std::endl;
+        // If there is any removal of an edge
+        if ((rmvEdgeFrom.size() != 0) && (rmvEdgeTo.size() != 0)) {
+            bool directed = false;
+            if (rmvEdgeFrom == rmvEdgeTo) {
+                directed = true;
+                pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
+                int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
+                p4Plan.updateEdge(true, rmvEdgeID);
+            } else {
+                directed = true;
+                int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
+                pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
+                p4Plan.updateEdge(true, rmvEdgeID);
+                rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeTo, rmvEdgeFrom);
+                pcvz->addEdgeByName(directed, true, rmvEdgeTo, rmvEdgeFrom);
+                p4Plan.updateEdge(true, rmvEdgeID);
+            }
+        }
+        // If the modification of regional robot capacity is required
+        std::vector<int> originalEdgeMax, newEdgeMax;
+        // std::cout << modReg << std::endl;
+        if ((modReg.size() != 0)) {
+            originalEdgeMax = pcvz->getEdgeMax();
+            pcvz->setRegionConstByName(modReg, modMax, -1, -1);
+            newEdgeMax = pcvz->getEdgeMax();
+            // update the max region capaciy
+            std::vector<int> edgeIDs;
+            for (int i = 0; i < newEdgeMax.size(); i++) {
+                std::cout << newEdgeMax[i] << " ";
+                edgeIDs.push_back(i);
+            }
+            std::cout << std::endl;
+            p4Plan.updateCapacity(edgeIDs, newEdgeMax);
+        }
+        std::vector<std::pair<int, int>> locP = p4Plan.localizePatch();
+
+        // do the patch
+        bool patchFound = true;
+        for (int i = 0; i <= livenessGuarantees.size(); i++) {
+            std::cout << "A" << std::endl;
+            std::cout << i << std::endl;
+            int goalID = i - 1;
+            patchFound &= patchForGoal(goalID, locP);
+        }
+
+        // if failed, print something
+        if (!patchFound) {
+            std::cout << "Patch Failed" << std::endl;
         } else {
-            directed = true;
-            int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
-            pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
-            p4Plan.updateEdge(true, rmvEdgeID);
-            rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeTo, rmvEdgeFrom);
-            pcvz->addEdgeByName(directed, true, rmvEdgeTo, rmvEdgeFrom);
-            p4Plan.updateEdge(true, rmvEdgeID);
+            // print as dot
+            pcvz->printPatch2Dot("ReAssigned", p4Plan.getAllTransitions());
         }
-        // std::cout << "Edge ID removed: " << rmvEdgeID << std::endl;
-        // p4Plan.printTransitions();
-        // update the safeSys
-        // BF newRMSG = getRMSG();
-        // safetySys = safetySysNoRM & newRMSG;
-    }
-    // If the modification of regional robot capacity is required
-    std::vector<int> originalEdgeMax, newEdgeMax;
-    // std::cout << modReg << std::endl;
-    if ((modReg.size() != 0)) {
-        originalEdgeMax = pcvz->getEdgeMax();
-        pcvz->setRegionConstByName(modReg, modMax, -1, -1);
-        newEdgeMax = pcvz->getEdgeMax();
-        // update the max region capaciy
-        std::vector<int> edgeIDs;
-        for (int i = 0; i < newEdgeMax.size(); i++) {
-            std::cout << newEdgeMax[i] << " ";
-            edgeIDs.push_back(i);
-        }
-        std::cout << std::endl;
-        p4Plan.updateCapacity(edgeIDs, newEdgeMax);
-    }
-    std::vector<std::pair<int, int>> locP = p4Plan.localizePatch();
-
-    // do the patch
-    bool patchFound = true;
-    for (int i = 0; i <= livenessGuarantees.size(); i++) {
-        std::cout << "A" << std::endl;
-        std::cout << i << std::endl;
-        int goalID = i - 1;
-        patchFound &= patchForGoal(goalID, locP);
-    }
-
-    // if failed, print something
-    if (!patchFound) {
-        std::cout << "Patch Failed" << std::endl;
-    } else {
-        // print as dot
-        pcvz->printPatch2Dot("ReAssigned", p4Plan.getAllTransitions());
     }
 
     // TODO Lists:

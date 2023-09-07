@@ -131,13 +131,6 @@ namespace swarmTest{
         // replace _tranSuffix[goalID][patchStart,..,patchEnd] with patch.  Similarly, goalID == -1 makes it patch the prefix
         void makePatch(std::vector<std::vector<int>> patch, int goalID, int patchStart, int patchEnd);
 
-        // return a series of locations in the original patch that require patching.  The location is a [goalID, tranID] pair
-        // modify the max size of a series of edges in the map
-        // std::vector<std::pair<int, int>> localizePatchModMax(std::vector<int> edgeIDs, std::vector<int> newMaxs);
-
-        // remove a certain edge
-        // std::vector<std::pair<int, int>> localizePatchRmvEdg(int edgeID);
-
         // general patch localizer that check
         // 1.) if the subswarm size exceeds edge max capacity.
         // 2.) if the transition has different total capacity than "robotNum"

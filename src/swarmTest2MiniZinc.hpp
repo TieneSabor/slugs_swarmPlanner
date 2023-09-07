@@ -232,30 +232,6 @@ class convert2MiniZinc {
 
     void testPatchWithEdgeLiterals();
 
-    // update clause by the defined name in Slugs
-    // bool slugsName2Clause(std::string slugsName, struct clause & curClause){
-    //     // check if it is an "after region" ("pre-proposition" in slugs)
-    //     char last = slugsName.back();
-    //     if (last=='\''){
-    //         std::string regionName = slugsName.substr(0,slugsName.size()-1);
-    //         auto regionID = _regionIDsByName.find(regionName);
-    //         if(regionID == _regionIDsByName.end()){
-    //             std::cout << "slugs name un-found: " << slugsName << std::endl;
-    //             return false;
-    //         }
-    //         curClause.afterRegionIndex.push_back(regionID->second);
-    //     }
-    //     else{
-    //         std::string regionName = slugsName;
-    //         auto regionID = _regionIDsByName.find(regionName);
-    //         if(regionID == _regionIDsByName.end()){
-    //             std::cout << "slugs name un-found: " << slugsName << std::endl;
-    //             return false;
-    //         }
-    //         curClause.beforeRegionIndex.push_back(regionID->second);
-    //     }
-    // }
-
   private:
     std::vector<std::string> _regionNames;
 

@@ -59,38 +59,6 @@ patcher::validState(std::vector<int> state) {
     return true;
 }
 
-// std::vector<std::pair<int, int>>
-// patcher::localizePatchModMax(std::vector<int> edgeIDs, std::vector<int> newMaxs) {
-//     std::vector<std::pair<int, int>> ret;
-//     if (edgeIDs.size() != newMaxs.size()) {
-//         std::cout << "Wrong modification size: " << edgeIDs.size() << ", " << newMaxs.size() << std::endl;
-//         return ret;
-//     }
-//     // check for prefix
-//     for (int i = 0; i < _tranPrefix.trans.size(); i++) {
-//         if (!(validState(_tranPrefix.trans[i], edgeIDs, newMaxs))) {
-//             ret.push_back(std::make_pair(-1, i));
-//         }
-//     }
-//     // and suffix
-//     for (int i = 0; i < _tranSuffix.size(); i++) {
-//         for (int j = 0; j < _tranSuffix[i].trans.size(); j++) {
-//             if (!(validState(_tranSuffix[i].trans[j], edgeIDs, newMaxs))) {
-//                 ret.push_back(std::make_pair(i, j));
-//             }
-//         }
-//     }
-//     return ret;
-// }
-
-// std::vector<std::pair<int, int>>
-// patcher::localizePatchRmvEdg(int edgeID) {
-//     std::vector<int> eids, maxs;
-//     eids.push_back(edgeID);
-//     maxs.push_back(0);
-//     return localizePatchModMax(eids, maxs);
-// }
-
 std::vector<std::pair<int, int>>
 patcher::localizePatch() {
     std::vector<std::pair<int, int>> ret;
