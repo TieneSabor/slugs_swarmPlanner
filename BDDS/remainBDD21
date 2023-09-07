@@ -1,0 +1,62 @@
+# This file is a BDD exported by the SLUGS
+#
+# This BDD is a strategy.
+#
+# This header contains extra information used by LTLMoP's BDDStrategy.
+# Currently, the only metadata is 1) the total number of system goals
+# and 2) the mapping between variable numbers and proposition names.
+#
+# Some special variables are also added:
+#       - `_jx_b*` are used as a binary vector (b0 is LSB) to indicate
+#         the index of the currently-pursued goal.
+#       - `strat_type` is a binary variable used to indicate whether we are
+#          moving closer to the current goal (0) or transitioning to the next goal (1)
+#
+# Num goals: 1
+# Variable names:
+#	0: K
+#	1: K'
+#	2: L
+#	3: L'
+#	4: M
+#	5: M'
+#	6: N
+#	7: N'
+#	8: O
+#	9: O'
+#	10: P
+#	11: P'
+#	12: Q
+#	13: Q'
+#	14: R
+#	15: R'
+#	16: S
+#	17: S'
+#	18: _jx_b0
+#	19: strat_type
+#
+# For information about the DDDMP format, please see:
+#    http://www.cs.uleth.ca/~rice/cudd_docs/dddmp/dddmpAllFile.html#dddmpDump.c
+#
+# For information about how this file is generated, please see the SLUGS source.
+#
+.ver DDDMP-2.0
+.mode A
+.varinfo 0
+.nnodes 5
+.nvars 20
+.nsuppvars 4
+.suppvarnames K' L' M' N'
+.orderedvarnames K K' L L' M M' N N' O O' P P' Q Q' R R' S S' _jx_b0 strat_type
+.ids 1 3 5 7
+.permids 1 3 5 7
+.auxids 1 3 5 7
+.nroots 1
+.rootids -5
+.nodes
+1 T 1 0 0
+2 7 3 1 -1
+3 5 2 1 -2
+4 3 1 3 1
+5 1 0 1 4
+.end

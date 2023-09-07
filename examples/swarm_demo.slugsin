@@ -30,9 +30,12 @@
 # P Q
 # Q S
 # R S
-# specify decreased region max number
-# Q 6
 # regional map end
+## specify decreased region max number
+## Q 6
+## specify removed edge
+## O N
+## regional map end
 [INPUT]
 
 [OUTPUT]

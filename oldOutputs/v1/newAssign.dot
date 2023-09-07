@@ -1,0 +1,35 @@
+digraph {
+K0 [label="K: 0"];
+L0 [label="L: 4"];
+M0 [label="M: 0"];
+N0 [label="N: 0"];
+O0 [label="O: 6"];
+P0 [label="P: 0"];
+Q0 [label="Q: 0"];
+R0 [label="R: 0"];
+S0 [label="S: 0"];
+rank = same {K0 -> L0 -> M0 -> N0 -> O0 -> P0 -> Q0 -> R0 -> S0 [style=invis] }K1 [label="K: 0"];
+L1 [label="L: 0"];
+M1 [label="M: 0"];
+N1 [label="N: 6"];
+O1 [label="O: 0"];
+P1 [label="P: 0"];
+Q1 [label="Q: 4"];
+R1 [label="R: 0"];
+S1 [label="S: 0"];
+rank = same {K1 -> L1 -> M1 -> N1 -> O1 -> P1 -> Q1 -> R1 -> S1 [style=invis] }L0 -> Q1
+O0 -> N1
+K2 [label="K: 0"];
+L2 [label="L: 0"];
+M2 [label="M: 0"];
+N2 [label="N: 0"];
+O2 [label="O: 0"];
+P2 [label="P: 6"];
+Q2 [label="Q: 0"];
+R2 [label="R: 0"];
+S2 [label="S: 4"];
+rank = same {K2 -> L2 -> M2 -> N2 -> O2 -> P2 -> Q2 -> R2 -> S2 [style=invis] }N1 -> P2
+Q1 -> S2
+K0 -> K1 -> K2 [ style=invis; weight=1000 ]
+S0 -> S1 -> S2 [ style=invis; weight=1000 ]
+}

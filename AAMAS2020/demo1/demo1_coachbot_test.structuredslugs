@@ -1,0 +1,121 @@
+# workspace: r0, r1, r2, r3
+# formations: S - square, H - hexgon, T- triangle
+
+# environment: danger
+
+# init: r0
+
+# high-level spec:
+# []<> (!danger -> (r0 & r1))
+# []<> (!danger -> (T@r0 & T@r1))
+# []<> (danger -> (S@r2 & H@r3))
+# [] !(r0 & r3)
+
+[OUTPUT]
+r0
+r1
+r2
+r3
+Tr0
+Tr1
+Sr2
+Hr3
+
+[INPUT]
+danger
+
+[SYS_INIT]
+r0 & !r1 & !r2 & !r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3
+
+[ENV_INIT]
+!danger
+
+
+[SYS_TRANS]
+# region graph
+r0 -> r1' | r2' | r0'
+r1 -> r1' | r3' | r0'
+r2 -> r1' | r2' | r0'
+r3 -> r1' | r3' | r2'
+!r1 & !r2 & !r0 -> !r0'
+!r3 & !r1 & !r0 -> !r1'
+!r1 & !r2 & !r0 -> !r2'
+!r1 & !r2 & !r3 -> !r3'
+
+
+Tr0 -> r0 & r0'
+Tr1 -> r1 & r1'
+Sr2 -> r2 & r2'
+Hr3 -> r3 & r3'
+
+r0 | r1 | r2 | r3
+
+# (Tr2 & !Dr2) | (!Tr2 & Dr2)
+
+#spec: safety
+!(r0 & r3)
+
+#check intermediate states
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & !Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & !Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & !Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & !Tr1' & Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & r2' & !r3' & !Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & !r2' & !r3' & Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & !r2' & !r3' & Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & !r2' & !r3' & !Tr0' & Tr1' & !Sr2' & !Hr3')
+
+(!r0 & !r1 & r2 & r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(r0' & r1' & !r2' & !r3' & !Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+(r0 & r1 & !r2 & !r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(!r0' & !r1' & r2' & r3' & !Tr0' & !Tr1' & Sr2' & Hr3')
+
+(r0 & r1 & !r2 & !r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(!r0' & !r1' & r2' & r3' & !Tr0' & !Tr1' & Sr2' & !Hr3')
+
+(r0 & r1 & !r2 & !r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(!r0' & !r1' & r2' & r3' & !Tr0' & !Tr1' & !Sr2' & Hr3')
+
+(r0 & r1 & !r2 & !r3 & !Tr0 & !Tr1 & !Sr2 & !Hr3) -> !(!r0' & !r1' & r2' & r3' & !Tr0' & !Tr1' & !Sr2' & !Hr3')
+
+
+
+
+[ENV_TRANS]
+
+
+[SYS_LIVENESS]
+#spec: goal
+!danger -> (r0 & r1)
+!danger -> (Tr0 & Tr1)
+danger -> (Sr2 & Hr3)
+
+
+
+[ENV_LIVENESS]

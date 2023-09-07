@@ -1,4 +1,5 @@
 src/slugs --swarmTest examples/simple_swarm.slugsin  out_null_root3
-minizinc swarmTest.mzn > mnzOut.txt
+/home/brad/Downloads/MiniZincIDE-2.7.6-bundle-linux-x86_64/bin/minizinc swarmTest.mzn > mnzOut.txt
 cd src; make; cd ..;src/slugs --swarmTest examples/swarm_demo.slugsin  out_demo
 dot -Tpng OriginalPlan.dot > originalplan.png
+. makePngs.sh

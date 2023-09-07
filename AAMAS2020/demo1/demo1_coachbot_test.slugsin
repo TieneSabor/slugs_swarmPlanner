@@ -1,0 +1,114 @@
+[INPUT]
+danger
+
+
+[OUTPUT]
+r0
+r1
+r2
+r3
+Tr0
+Tr1
+Sr2
+Hr3
+
+
+[ENV_TRANS]
+
+
+
+[ENV_INIT]
+! danger
+
+
+
+[SYS_TRANS]
+# region graph
+| ! r0 | | r1' r2' r0'
+| ! r1 | | r1' r3' r0'
+| ! r2 | | r1' r2' r0'
+| ! r3 | | r1' r3' r2'
+| ! & & ! r1 ! r2 ! r0 ! r0'
+| ! & & ! r3 ! r1 ! r0 ! r1'
+| ! & & ! r1 ! r2 ! r0 ! r2'
+| ! & & ! r1 ! r2 ! r3 ! r3'
+
+
+| ! Tr0 & r0 r0'
+| ! Tr1 & r1 r1'
+| ! Sr2 & r2 r2'
+| ! Hr3 & r3 r3'
+
+| | | r0 r1 r2 r3
+
+# (Tr2 & !Dr2) | (!Tr2 & Dr2)
+
+#spec: safety
+! & r0 r3
+
+#check intermediate states
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' ! Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' ! Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' ! Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' ! Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' r2' ! r3' ! Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' ! r2' ! r3' Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' ! r2' ! r3' Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' ! r2' ! r3' ! Tr0' Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & ! r0 ! r1 r2 r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & r0' r1' ! r2' ! r3' ! Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+| ! & & & & & & & r0 r1 ! r2 ! r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & ! r0' ! r1' r2' r3' ! Tr0' ! Tr1' Sr2' Hr3'
+
+| ! & & & & & & & r0 r1 ! r2 ! r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & ! r0' ! r1' r2' r3' ! Tr0' ! Tr1' Sr2' ! Hr3'
+
+| ! & & & & & & & r0 r1 ! r2 ! r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & ! r0' ! r1' r2' r3' ! Tr0' ! Tr1' ! Sr2' Hr3'
+
+| ! & & & & & & & r0 r1 ! r2 ! r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3 ! & & & & & & & ! r0' ! r1' r2' r3' ! Tr0' ! Tr1' ! Sr2' ! Hr3'
+
+
+
+
+
+[SYS_INIT]
+& & & & & & & r0 ! r1 ! r2 ! r3 ! Tr0 ! Tr1 ! Sr2 ! Hr3
+
+
+[SYS_LIVENESS]
+#spec: goal
+| ! ! danger & r0 r1
+| ! ! danger & Tr0 Tr1
+| ! danger & Sr2 Hr3
+
+
+
+

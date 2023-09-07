@@ -119,13 +119,87 @@ convert2MiniZinc::addEdgeByIndex(bool directed, bool remove, int fromIndex, int 
         if (!directed)
             _rM.addEdge(toIndex, fromIndex);
     }
+    _edgeFTInited = false;
+    _fTEdgeInited = false;
+}
+
+int
+convert2MiniZinc::getEdgeIDByIndex(int fromIndex, int toIndex) {
+    int nR = _regionIDsByName.size();
+    if (!_fTEdgeInited) {
+        int id = 0;
+        // update the eid to from-to pairs
+        _fromToEdge.resize(nR, std::vector<int>(nR, -1));
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                _fromToEdge[j][outEdges[k]] = id;
+                id++;
+            }
+        }
+        _fTEdgeInited = true;
+    }
+    if ((fromIndex < nR) && (fromIndex >= 0) && (toIndex < nR) && (toIndex >= 0)) {
+        return _fromToEdge[fromIndex][toIndex];
+    } else {
+        std::cout << "Query for wrong region ID.  Return meaningless data" << std::endl;
+        return -1;
+    }
+}
+
+int
+convert2MiniZinc::getEdgeIDByName(std::string nameFrom, std::string nameTo) {
+    return getEdgeIDByIndex(_regionIDsByName[nameFrom], _regionIDsByName[nameTo]);
+}
+
+std::pair<int, int>
+convert2MiniZinc::regionFromToByEdgeIndex(int eid) {
+    if (!_edgeFTInited) {
+        int nR = _regionIDsByName.size();
+        // update the eid to from-to pairs
+        _edgeFromTo.clear();
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::pair<int, int> eFT = std::make_pair(j, outEdges[k]);
+                _edgeFromTo.push_back(eFT);
+            }
+        }
+        _edgeFTInited = true;
+    }
+    if (eid < _edgeFromTo.size()) {
+        return _edgeFromTo[eid];
+    } else {
+        std::cout << "Queue for wrong edge ID.  Return meaningless data" << std::endl;
+        return std::make_pair(-1, -1);
+    }
 }
 
 void
-convert2MiniZinc::printMiniZinc(printDest dest, std::string fileName, unsigned int layerNumber) {
-    if (layerNumber == 0)
-        return;
-    std::string miniZinc = miniZincString(layerNumber);
+convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int layerNumber, std::vector<std::vector<int>> assignment, bool finalBC) {
+    std::string miniZinc;
+    switch (reason) {
+    case (patching):
+        if (layerNumber == 0)
+            return;
+        miniZinc = miniZincString(layerNumber, finalBC);
+        break;
+
+    case (reassignment):
+        miniZinc = miniZincReassign(assignment, finalBC);
+        break;
+
+    case (planassignment):
+        if (assignment.size() == 1)
+            // will be a problem when the assignment has no transitions
+            return;
+        miniZinc = miniZincAssign(assignment, finalBC);
+        break;
+
+    default:
+        std::cout << "The printFor is not implemented yet" << std::endl;
+        break;
+    }
     std::ofstream out(fileName + ".mzn");
     // for redirect the std out of the child process in the toFork case
     int link[2];
@@ -194,7 +268,6 @@ convert2MiniZinc::printMiniZinc(printDest dest, std::string fileName, unsigned i
             // execvp("minizinc", argv);
         }
         // get the string from pipe
-        std::cout << "to patcher" << std::endl;
         int bufSize = 100, ret = 0;
         char buff[bufSize + 1];
         buff[bufSize] = '\0';
@@ -208,7 +281,6 @@ convert2MiniZinc::printMiniZinc(printDest dest, std::string fileName, unsigned i
         } while (ret == bufSize);
         // std::cout << bufStream.str();
         // wait for the child to complete
-        std::cout << "to patcher" << std::endl;
         int res = waitPidHandy(pid1);
         close(link[1]);
         close(link[0]);
@@ -286,7 +358,255 @@ mznLiteral(bool n, std::string X) {
 }
 
 std::string
-convert2MiniZinc::miniZincString(unsigned int layernumber) {
+mznEdgeLiteral(bool n, std::string X1, std::string X2) {
+    if (n) {
+        return "(" + X1 + " > 0) \\/ (" + X2 + " > 0)";
+    } else {
+        return "((" + X1 + " == 0) /\\ (" + X2 + " == 0))";
+    }
+}
+
+std::string
+convert2MiniZinc::miniZincAssign(std::vector<std::vector<int>> assignment, bool finalBC) {
+    // here the assignment is the region swarm state
+    std::stringstream os;
+    int nR = _regionNames.size();
+    int nS = assignment.size();   // number of transitions
+    int sum = 0;
+    // get the total robot number in assignment
+    for (int i = 0; i < nR; i++) {
+        sum += _iniNs[i];
+    }
+    // print region variables
+    os << mZCom("Declare Regional Variables");
+    for (int i = 0; i < nS; i++) {
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(i + 1);
+            os << mZVar(rP, 0, _maxNs[j]);
+        }
+    }
+    // print edge variables
+    os << mZCom("Declare Edge Variables");
+    for (int i = 0; i < nS - 1; i++) {
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                os << mZVar(rE, 0, std::min(_maxNs[j], _maxNs[outEdges[k]]));
+            }
+        }
+    }
+    // Use EXC so that the problem is formulated as a optimization problem
+    // os << mZVar("EXC", 0, sum);
+    // print Initial/Final Condition
+    os << mZCom("Initial-Final Conditions");
+    for (int i = 0; i < nR; i++) {
+        // initial region state = initial values
+        std::string rPi = "r" + _regionNames[i] + std::to_string(1);
+        os << mZCtr(rPi + " == " + std::to_string(_iniNs[i]));
+        if (finalBC) {
+            std::string rPf = "r" + _regionNames[i] + std::to_string(nS);
+            os << mZCtr(rPf + " == " + std::to_string(_fnlNs[i]));
+        }
+    }
+    // print transitions based on assignment and conservation rules
+    os << mZCom("Conservation Law");
+    for (int t = 0; t < nS; t++) {
+        for (int i = 0; i < nR; i++) {
+            // sum of out edges = sum of in edges for all regions
+            if (t != (nS - 1)) {
+                std::string si;
+                std::vector<int> outNgh = getRegionOutNeighborByIndex(i);
+                for (int j = 0; j < outNgh.size(); j++) {
+                    std::string rE = _regionNames[i] + std::to_string(t + 1) + _regionNames[outNgh[j]] + std::to_string(t + 2);
+                    si += rE + " + ";
+                }
+                std::string rP = "r" + _regionNames[i] + std::to_string(t + 1);
+                os << mZCtr(si + " 0 == " + rP);
+            }
+            if (t != 0) {
+                std::string si;
+                std::vector<int> inNgh = getRegionInNeighborByIndex(i);
+                for (int j = 0; j < inNgh.size(); j++) {
+                    std::string rE = _regionNames[inNgh[j]] + std::to_string(t) + _regionNames[i] + std::to_string(t + 1);
+                    si += rE + " + ";
+                }
+                std::string rP = "r" + _regionNames[i] + std::to_string(t + 1);
+                os << mZCtr(si + " 0 == " + rP);
+            }
+        }
+    }
+    // print the region that is allowed or not allowed to have robot in each state
+    os << mZCom("Symbolic Plan");
+    for (int s = 0; s < nS; s++) {
+        std::string si;
+        for (int i = 0; i < nR; i++) {
+            std::string rP = "r" + _regionNames[i] + std::to_string(s + 1);
+            if (assignment[s][i] == 1) {
+                si += mznLiteral(1, rP);
+            } else if (assignment[s][i] == 0) {
+                si += mznLiteral(0, rP);
+            } else {
+                std::cout << "Unknown assignment status: " << assignment[s][i] << std::endl;
+            }
+            si += " /\\ ";
+        }
+        si = si.substr(0, si.size() - 3);   // take away the last "\/ "
+        os << mZCtr(si);
+    }
+    // Goal Function: We want to minimize the assignment exceed the regional capacity
+    // os << mZCom("Goal Function");
+    // std::string si;
+    // std::vector<int> eMax = getEdgeMax();
+    // for (int i = 0; i < nT; i++) {
+    //     for (int j = 0; j < nE; j++) {
+    //         int eas = assignment[i][j];
+    //         if (eas > 0) {
+    //             std::pair<int, int> ft = regionFromToByEdgeIndex(j);
+    //             std::string rE = _regionNames[ft.first] + std::to_string(i + 1) + _regionNames[ft.second] + std::to_string(i + 2);
+    //             si += "max( 0, " + rE + " - " + std::to_string(eMax[j]) + " ) + ";
+    //         }
+    //     }
+    // }
+    // os << mZCtr("EXC == " + si + " 0");
+    // print the "Solve" and "Print"
+    // os << "solve minimize EXC;" << std::endl;
+    os << "solve satisfy;" << std::endl;
+    for (int i = 0; i < nS - 1; i++) {
+        os << "output [\"[step " << i + 1 << " " << i + 2 << " ] ";
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                os << _regionNames[j] << _regionNames[outEdges[k]] << ": \\(" << rE << ") ";
+            }
+        }
+        os << "\\n\"]; " << std::endl;
+    }
+    // return
+    return os.str();
+}
+
+std::string
+convert2MiniZinc::miniZincReassign(std::vector<std::vector<int>> assignment, bool finalBC) {
+    // here the assignment is the edge robot number assignment
+    std::stringstream os;
+    int nR = _regionNames.size();
+    int nT = assignment.size();      // number of transitions
+    int nE = assignment[0].size();   // number of edges in the road map
+    int sum = 0;
+    // get the total robot number in assignment
+    for (int i = 0; i < nE; i++) {
+        sum += assignment[0][i];
+    }
+    // print transition variables
+    os << mZCom("Declare Transitions Variable");
+    for (int i = 0; i < nT; i++) {
+        for (int j = 0; j < nE; j++) {
+            int eas = assignment[i][j];
+            if (eas > 0) {
+                std::pair<int, int> ft = regionFromToByEdgeIndex(j);
+                std::string rE = _regionNames[ft.first] + std::to_string(i + 1) + _regionNames[ft.second] + std::to_string(i + 2);
+                os << mZVar(rE, 1, sum);
+            }
+        }
+    }
+    os << mZVar("EXC", 0, sum);
+    // print Initial/Final Condition
+    os << mZCom("Initial-Final Conditions");
+    for (int i = 0; i < nR; i++) {
+        // initial region state = sum of out edges
+        std::string si;
+        std::vector<int> outNgh = getRegionOutNeighborByIndex(i);
+        for (int j = 0; j < outNgh.size(); j++) {
+            int eid = getEdgeIDByIndex(i, outNgh[j]);
+            if (assignment[0][eid] > 0) {
+                std::string rE = _regionNames[i] + std::to_string(1) + _regionNames[outNgh[j]] + std::to_string(2);
+                si += rE + " + ";
+            }
+        }
+        os << mZCtr(si + " 0 == " + std::to_string(_iniNs[i]));
+        if (finalBC) {
+            // final region state = sum of in edges
+            // no need in the non - periodic case
+            si = "";
+            std::vector<int> inNgh = getRegionInNeighborByIndex(i);
+            for (int j = 0; j < inNgh.size(); j++) {
+                int eid = getEdgeIDByIndex(inNgh[j], i);
+                if (assignment[nT - 1][eid] > 0) {
+                    std::string rE = _regionNames[inNgh[j]] + std::to_string(nT) + _regionNames[i] + std::to_string(nT + 1);
+                    si += rE + " + ";
+                }
+            }
+            os << mZCtr(si + " 0 == " + std::to_string(_fnlNs[i]));
+        }
+    }
+    // print transitions based on assignment and conservation rules
+    os << mZCom("Conservation Law");
+    for (int t = 1; t < nT; t++) {
+        for (int i = 0; i < nR; i++) {
+            // sum of out edges = sum of in edges for all regions
+            std::string si;
+            std::vector<int> outNgh = getRegionOutNeighborByIndex(i);
+            for (int j = 0; j < outNgh.size(); j++) {
+                int eid = getEdgeIDByIndex(i, outNgh[j]);
+                if (assignment[t][eid] > 0) {
+                    std::string rE = _regionNames[i] + std::to_string(t + 1) + _regionNames[outNgh[j]] + std::to_string(t + 2);
+                    si += rE + " + ";
+                }
+            }
+            si += " 0 == ";
+            std::vector<int> inNgh = getRegionInNeighborByIndex(i);
+            for (int j = 0; j < inNgh.size(); j++) {
+                int eid = getEdgeIDByIndex(inNgh[j], i);
+                if (assignment[t - 1][eid] > 0) {
+                    std::string rE = _regionNames[inNgh[j]] + std::to_string(t) + _regionNames[i] + std::to_string(t + 1);
+                    si += rE + " + ";
+                }
+            }
+            os << mZCtr(si + " 0");
+        }
+    }
+    // Goal Function: We want to minimize the assignment exceed the regional capacity
+    os << mZCom("Goal Function");
+    std::string si;
+    std::vector<int> eMax = getEdgeMax();
+    for (int i = 0; i < nT; i++) {
+        for (int j = 0; j < nE; j++) {
+            int eas = assignment[i][j];
+            if (eas > 0) {
+                std::pair<int, int> ft = regionFromToByEdgeIndex(j);
+                std::string rE = _regionNames[ft.first] + std::to_string(i + 1) + _regionNames[ft.second] + std::to_string(i + 2);
+                si += "max( 0, " + rE + " - " + std::to_string(eMax[j]) + " ) + ";
+            }
+        }
+    }
+    os << mZCtr("EXC == " + si + " 0");
+    // print the "Solve" and "Print"
+    os << "solve minimize EXC;" << std::endl;
+    for (int i = 0; i < nT; i++) {
+        os << "output [\"[step " << i + 1 << " " << i + 2 << " ] ";
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                int eid = getEdgeIDByIndex(j, outEdges[k]);
+                int eas = assignment[i][eid];
+                if (eas > 0) {
+                    os << _regionNames[j] << _regionNames[outEdges[k]] << ": \\(" << rE << ") ";
+                } else {
+                    os << _regionNames[j] << _regionNames[outEdges[k]] << ": 0";
+                }
+            }
+        }
+        os << "\\n\"]; " << std::endl;
+    }
+    // return
+    return os.str();
+}
+
+std::string
+convert2MiniZinc::miniZincString(unsigned int layernumber, bool finalBC) {
     std::ostringstream os;
     // print region variables
     os << mZCom("Declare Regional Variables");
@@ -334,6 +654,27 @@ convert2MiniZinc::miniZincString(unsigned int layernumber) {
             os << mZCtr(cj);
         }
     }
+    // print intermediate state literals
+    /*
+    os << mZCom("Intermediate State Constraints");
+    nC = _edgeLiterals.size();   // number of clauses
+    for (int i = 0; i < layernumber; i++) {
+        for (int j = 0; j < nC; j++) {
+            int jC = _edgeLiterals[j].size();   // number of literal in the jth clauses
+            std::string cj;
+            for (int k = 0; k < jC; k++) {
+                std::pair<int, bool> ljk = _edgeLiterals[j][k];   // the literal
+                std::pair<int, int> eid = regionFromToByEdgeIndex(ljk.first);
+                std::string eP1 = _regionNames[eid.first] + std::to_string(i + 1) + _regionNames[eid.second] + std::to_string(i + 2);
+                std::string eP2 = _regionNames[eid.second] + std::to_string(i + 1) + _regionNames[eid.first] + std::to_string(i + 2);
+                std::string li = mznEdgeLiteral(ljk.second, eP1, eP2);
+                cj += li + " \\/ ";
+            }
+            cj = cj.substr(0, cj.size() - 3);   // take away the last "\/ "
+            os << mZCtr(cj);
+        }
+    }
+    */
     // print conservation law: inlet sum equals after region value, and outlet sum equals before region value
     os << mZCom("Conservation Constraint: Inlets");
     for (int i = 0; i < layernumber; i++) {
@@ -375,10 +716,12 @@ convert2MiniZinc::miniZincString(unsigned int layernumber) {
         std::string rP = "r" + _regionNames[j] + "1";
         os << mZCtr(rP + " == " + std::to_string(_iniNs[j]));
     }
-    os << mZCom("Final Conditions");
-    for (int j = 0; j < nR; j++) {
-        std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
-        os << mZCtr(rP + " == " + std::to_string(_fnlNs[j]));
+    if (finalBC) {
+        os << mZCom("Final Conditions");
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
+            os << mZCtr(rP + " == " + std::to_string(_fnlNs[j]));
+        }
     }
     // print "solve" and output
     os << "solve satisfy;" << std::endl;
@@ -423,28 +766,28 @@ convert2MiniZinc::regionState2NodeString(std::vector<int> rS, int stateNum) {
 }
 
 void
-convert2MiniZinc::printPatch2Dot(std::string fileName) {
-    if (_patch.size() == 0) {
+convert2MiniZinc::printPatch2Dot(std::string fileName, std::vector<std::vector<int>> patch) {
+    if (patch.size() == 0) {
         std::cout << "Patch size is 0.  Cancel printing to file.  " << std::endl;
         return;
     }
     std::ofstream out(fileName + ".dot");
     // print header and the first state
     out << "digraph {" << std::endl;
-    std::vector<int> rS = edge2RegionState(true, _patch[0]);
+    std::vector<int> rS = edge2RegionState(true, patch[0]);
     out << regionState2NodeString(rS, 0);
     // for each transition
-    for (int i = 0; i < _patch.size(); i++) {
+    for (int i = 0; i < patch.size(); i++) {
         // print the node in this state
         // find the number of assignment inside each region after this transition
-        rS = edge2RegionState(false, _patch[i]);
+        rS = edge2RegionState(false, patch[i]);
         out << regionState2NodeString(rS, i + 1);
         // print the edge connect to the last state
         int edgeID = 0;
         for (int j = 0; j < _regionNames.size(); j++) {
             auto outEdges = _rM.getOutRegion(j);
             for (int k = 0; k < outEdges.size(); k++) {
-                int fromJ2outK = _patch[i][edgeID];   // before: sum of out edge
+                int fromJ2outK = patch[i][edgeID];   // before: sum of out edge
                 if (fromJ2outK != 0) {
                     out << _regionNames[j] + std::to_string(i) + " -> " + _regionNames[outEdges[k]] + std::to_string(i + 1) << std::endl;
                 }
@@ -453,20 +796,114 @@ convert2MiniZinc::printPatch2Dot(std::string fileName) {
         }
     }
     // print invisible verticle skeleton
-    for (int i = 0; i <= _patch.size(); i++) {
+    for (int i = 0; i <= patch.size(); i++) {
         out << _regionNames[0] + std::to_string(i);
-        if (i != _patch.size()) {
+        if (i != patch.size()) {
             out << " -> ";
         }
     }
     out << " [ style=invis; weight=1000 ]" << std::endl;
-    for (int i = 0; i <= _patch.size(); i++) {
+    for (int i = 0; i <= patch.size(); i++) {
         out << _regionNames[_regionNames.size() - 1] + std::to_string(i);
-        if (i != _patch.size()) {
+        if (i != patch.size()) {
             out << " -> ";
         }
     }
     out << " [ style=invis; weight=1000 ]" << std::endl;
     // file ender
     out << "}" << std::endl;
+}
+
+void
+convert2MiniZinc::printPatch2Dot(std::string fileName) {
+    return printPatch2Dot(fileName, _patch);
+}
+
+void
+convert2MiniZinc::printEdgeLiterals() {
+    for (int i = 0; i < _edgeLiterals.size(); i++) {
+        std::vector<std::pair<int, bool>> li = _edgeLiterals[i];
+        std::cout << "[Clause " << i << "]: ";
+        for (int j = 0; j < li.size(); j++) {
+            std::pair<int, bool> pij = li[j];
+            int eid;
+            std::string From, To;
+            eid = pij.first;
+            std::pair<int, int> idFT = regionFromToByEdgeIndex(eid);
+            From = _regionNames[idFT.first];
+            To = _regionNames[idFT.second];
+            if (pij.second) {
+                std::cout << From << To << " \\/ ";
+            } else {
+                std::cout << " !" << From << To << " \\/ ";
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+void
+convert2MiniZinc::testPatchWithEdgeLiterals() {
+    int nP = _patch.size();
+    int nC = _edgeLiterals.size();
+    for (int i = 0; i < nP; i++) {
+        std::vector<int> pi = _patch[i];
+        for (int j = 0; j < nC; j++) {
+            std::vector<std::pair<int, bool>> cj = _edgeLiterals[j];
+            bool same = false;
+            for (int cji = 0; cji < cj.size(); cji++) {
+                std::pair<int, bool> lit = cj[cji];
+                std::pair<int, int> idFT = regionFromToByEdgeIndex(lit.first);
+                int conjEid = getEdgeIDByIndex(idFT.second, idFT.first);
+                if (lit.second) {
+                    bool pred = false;
+                    for (int pei = 0; pei < pi.size(); pei++) {
+                        bool ei = (pi[pei] > 0);
+                        if ((lit.first == pei) || (conjEid == pei)) {
+                            pred |= (ei == lit.second);
+                        }
+                    }
+                    same |= pred;
+                } else {
+                    bool pred = true;
+                    for (int pei = 0; pei < pi.size(); pei++) {
+                        bool ei = (pi[pei] > 0);
+                        if ((lit.first == pei) || (conjEid == pei)) {
+                            pred &= (ei == lit.second);
+                        }
+                    }
+                    same |= pred;
+                }
+            }
+            if (!same) {
+                std::cout << "======================================" << std::endl;
+                std::cout << "Conflict between transition and clause" << std::endl;
+                std::cout << "[Transition" << i << "]: ";
+                for (int pei = 0; pei < pi.size(); pei++) {
+                    std::pair<int, int> idFT = regionFromToByEdgeIndex(pei);
+                    std::string From, To;
+                    From = _regionNames[idFT.first];
+                    To = _regionNames[idFT.second];
+                    std::cout << From << " -> " << To << ": " << pi[pei] << ", ";
+                }
+                std::cout << std::endl;
+                std::cout << "[Clause " << j << "]: ";
+                for (int cji = 0; cji < cj.size(); cji++) {
+                    std::pair<int, bool> pij = cj[cji];
+                    int eid;
+                    std::string From, To;
+                    eid = pij.first;
+                    std::pair<int, int> idFT = regionFromToByEdgeIndex(eid);
+                    From = _regionNames[idFT.first];
+                    To = _regionNames[idFT.second];
+                    if (pij.second) {
+                        std::cout << From << To << " \\/ ";
+                    } else {
+                        std::cout << " !" << From << To << " \\/ ";
+                    }
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
 }

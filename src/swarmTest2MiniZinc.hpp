@@ -53,6 +53,12 @@ enum printDest {
     toPatcher
 };
 
+enum printFor {
+    patching,
+    reassignment,
+    planassignment
+};
+
 struct clause {
     std::vector<int> beforeRegionIndex;
     std::vector<bool> beforeComplemented;
@@ -68,6 +74,22 @@ class convert2MiniZinc {
     int getRegionNum() {
         return _maxNs.size();
     }
+
+    std::vector<int> getRegionCap() {
+        return _maxNs;
+    }
+
+    std::vector<int> getRegionInit() {
+        return _iniNs;
+    }
+
+    // if the edge does not exist, return -1
+    int getEdgeIDByIndex(int fromIndex, int toIndex);
+
+    // if the edge does not exist, return -1
+    int getEdgeIDByName(std::string nameFrom, std::string nameTo);
+
+    std::pair<int, int> regionFromToByEdgeIndex(int eid);
 
     // if ***N is -1, then the value remains unchanged
     void setRegionConstByIndex(int index, int maxN, int iniN, int fnlN) {
@@ -135,9 +157,11 @@ class convert2MiniZinc {
         _clauses.clear();
     }
 
-    void printMiniZinc(printDest dest, std::string fileName, unsigned int layerNumber);
+    void printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int layerNumber, std::vector<std::vector<int>> assignment, bool finalBC);
 
     void printPatch2Dot(std::string fileName);
+
+    void printPatch2Dot(std::string fileName, std::vector<std::vector<int>> patch);
 
     // Utilities
     void printClauses() {
@@ -200,6 +224,14 @@ class convert2MiniZinc {
         return eM;
     }
 
+    void setEdgeLiterals(std::vector<std::vector<std::pair<int, bool>>> literals) {
+        _edgeLiterals = literals;
+    }
+
+    void printEdgeLiterals();
+
+    void testPatchWithEdgeLiterals();
+
     // update clause by the defined name in Slugs
     // bool slugsName2Clause(std::string slugsName, struct clause & curClause){
     //     // check if it is an "after region" ("pre-proposition" in slugs)
@@ -239,7 +271,17 @@ class convert2MiniZinc {
 
     std::vector<struct clause> _clauses;
 
-    std::string miniZincString(unsigned int layernumber);
+    std::vector<std::vector<std::pair<int, bool>>> _edgeLiterals;
+
+    bool _edgeFTInited = false, _fTEdgeInited = false;
+    std::vector<std::pair<int, int>> _edgeFromTo;
+    std::vector<std::vector<int>> _fromToEdge;
+
+    std::string miniZincString(unsigned int layernumber, bool finalBC);
+
+    std::string miniZincAssign(std::vector<std::vector<int>> assignment, bool finalBC);
+
+    std::string miniZincReassign(std::vector<std::vector<int>> assignment, bool finalBC);
 
     // for working with the patcher
     std::vector<std::vector<int>> _patch;

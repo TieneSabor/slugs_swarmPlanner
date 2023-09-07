@@ -1,0 +1,157 @@
+=========<Add strategy as clauses>==========
+Here
+Bad
+Bad
+OK
+Bad
+OK
+OK
+Bad
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+Bad
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+[Clause 0]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 1]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ KM \/  !KL \/ 
+[Clause 2]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/  !KM \/ 
+[Clause 3]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 4]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ KO \/  !KM \/ 
+[Clause 5]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/  !KO \/ 
+[Clause 6]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 7]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 8]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ LQ \/  !KO \/ 
+[Clause 9]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/  !LQ \/ 
+[Clause 10]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 11]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 12]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 13]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ MR \/  !LQ \/ 
+[Clause 14]: RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/  !MR \/ 
+[Clause 15]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 16]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 17]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 18]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 19]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ NO \/  !MR \/ 
+[Clause 20]: RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/  !NO \/ 
+[Clause 21]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 22]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 23]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 24]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 25]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/ NO \/  !MR \/ 
+[Clause 26]: RS \/ QS \/ PQ \/ OP \/  !NR \/ NP \/  !NO \/ 
+[Clause 27]: RS \/ QS \/ PQ \/ OP \/  !NR \/  !NP \/ 
+[Clause 28]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 29]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 30]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 31]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 32]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/ NO \/  !MR \/ 
+[Clause 33]: RS \/ QS \/ PQ \/  !OP \/ NR \/ NP \/  !NO \/ 
+[Clause 34]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/ NO \/ 
+[Clause 35]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/  !NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 36]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/  !NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 37]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/  !NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 38]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/  !NO \/ MR \/  !LQ \/ 
+[Clause 39]: RS \/ QS \/ PQ \/  !OP \/ NR \/  !NP \/  !NO \/  !MR \/ 
+[Clause 40]: RS \/ QS \/ PQ \/  !OP \/  !NR \/ 
+[Clause 41]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 42]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 43]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 44]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 45]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ 
+[Clause 46]: RS \/ QS \/  !PQ \/ OP \/ NR \/ NP \/  !NO \/ 
+[Clause 47]: RS \/ QS \/  !PQ \/ OP \/ NR \/  !NP \/ 
+[Clause 48]: RS \/ QS \/  !PQ \/ OP \/  !NR \/ 
+[Clause 49]: RS \/ QS \/  !PQ \/  !OP \/ 
+[Clause 50]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 51]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 52]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 53]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 54]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ 
+[Clause 55]: RS \/  !QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ 
+[Clause 56]: RS \/  !QS \/ PQ \/ OP \/ NR \/  !NP \/ 
+[Clause 57]: RS \/  !QS \/ PQ \/ OP \/  !NR \/ 
+[Clause 58]: RS \/  !QS \/ PQ \/  !OP \/ 
+[Clause 59]: RS \/  !QS \/  !PQ \/ 
+[Clause 60]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/ KM \/  !KL \/ 
+[Clause 61]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/ KO \/  !KM \/ 
+[Clause 62]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/ LQ \/  !KO \/ 
+[Clause 63]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/ MR \/  !LQ \/ 
+[Clause 64]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/ NO \/  !MR \/ 
+[Clause 65]:  !RS \/ QS \/ PQ \/ OP \/ NR \/ NP \/  !NO \/ 
+[Clause 66]:  !RS \/ QS \/ PQ \/ OP \/ NR \/  !NP \/ 
+[Clause 67]:  !RS \/ QS \/ PQ \/ OP \/  !NR \/ 
+[Clause 68]:  !RS \/ QS \/ PQ \/  !OP \/ 
+[Clause 69]:  !RS \/ QS \/  !PQ \/ 
+[Clause 70]:  !RS \/  !QS \/ 

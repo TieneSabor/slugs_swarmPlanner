@@ -67,7 +67,7 @@ configure:3441: found /usr/bin/gcc
 configure:3452: result: gcc
 configure:3681: checking for C compiler version
 configure:3690: gcc --version >&5
-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
 Copyright (C) 2019 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -80,9 +80,9 @@ COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper
 OFFLOAD_TARGET_NAMES=nvptx-none:hsa
 OFFLOAD_TARGET_DEFAULT=1
 Target: x86_64-linux-gnu
-Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.1' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-Av3uEd/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
-gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.1) 
+gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
 configure:3701: $? = 0
 configure:3690: gcc -V >&5
 gcc: error: unrecognized command line option '-V'
@@ -141,7 +141,7 @@ configure:4463: found /usr/bin/g++
 configure:4474: result: g++
 configure:4501: checking for C++ compiler version
 configure:4510: g++ --version >&5
-g++ (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+g++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
 Copyright (C) 2019 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -154,9 +154,9 @@ COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper
 OFFLOAD_TARGET_NAMES=nvptx-none:hsa
 OFFLOAD_TARGET_DEFAULT=1
 Target: x86_64-linux-gnu
-Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.1' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-Av3uEd/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
-gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.1) 
+gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
 configure:4521: $? = 0
 configure:4510: g++ -V >&5
 g++: error: unrecognized command line option '-V'
@@ -577,8 +577,8 @@ configure: failed program was:
 | }
 configure:12065: result: no
 configure:12097: checking for doxygen
-configure:12127: result: no
-configure:12136: WARNING: Doxygen not found - continuing without Doxygen support
+configure:12113: found /usr/bin/doxygen
+configure:12124: result: doxygen
 configure:12156: checking for pdflatex
 configure:12186: result: no
 configure:12195: WARNING: pdflatex not found - unable to compile manual to PDF
@@ -592,7 +592,7 @@ conftest.c:30:6: warning: conflicting types for built-in function 'pow'; expecte
       |      ^~~
 conftest.c:1:1: note: 'pow' is declared in header '<math.h>'
     1 | /* confdefs.h */
-/usr/bin/ld: /tmp/ccsj7TSa.o: in function `main':
+/usr/bin/ld: /tmp/cchqagag.o: in function `main':
 /home/brad/Documents/SwarmBySpec/slugs/lib/cudd-3.0.0/conftest.c:34: undefined reference to `pow'
 collect2: error: ld returned 1 exit status
 configure:12290: $? = 1
@@ -648,7 +648,7 @@ configure:12340: $? = 0
 configure:12349: result: yes
 configure:12366: checking for library containing WSAStartup
 configure:12397: gcc -o conftest -Wall -Wextra -g -O3   conftest.c -lm  >&5
-/usr/bin/ld: /tmp/cct1yUGY.o: in function `main':
+/usr/bin/ld: /tmp/ccKGqot9.o: in function `main':
 /home/brad/Documents/SwarmBySpec/slugs/lib/cudd-3.0.0/conftest.c:34: undefined reference to `WSAStartup'
 collect2: error: ld returned 1 exit status
 configure:12397: $? = 1
@@ -735,7 +735,7 @@ configure: failed program was:
 configure:12414: result: no
 configure:12422: checking for library containing GetProcessMemoryInfo
 configure:12453: gcc -o conftest -Wall -Wextra -g -O3   conftest.c -lm  >&5
-/usr/bin/ld: /tmp/ccTvSlR6.o: in function `main':
+/usr/bin/ld: /tmp/ccn2o6Ae.o: in function `main':
 /home/brad/Documents/SwarmBySpec/slugs/lib/cudd-3.0.0/conftest.c:34: undefined reference to `GetProcessMemoryInfo'
 collect2: error: ld returned 1 exit status
 configure:12453: $? = 1
@@ -1371,6 +1371,7 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on brad-GL552VW
 
+config.status:1198: creating Doxyfile
 config.status:1198: creating Makefile
 config.status:1198: creating dddmp/exp/test1.sh
 config.status:1198: creating dddmp/exp/test2.sh
@@ -1464,6 +1465,7 @@ ac_cv_path_mkdir=/usr/bin/mkdir
 ac_cv_prog_AWK=mawk
 ac_cv_prog_CPP='gcc -E'
 ac_cv_prog_CXXCPP='g++ -E'
+ac_cv_prog_DOXYGEN=doxygen
 ac_cv_prog_ac_ct_AR=ar
 ac_cv_prog_ac_ct_CC=gcc
 ac_cv_prog_ac_ct_CXX=g++
@@ -1559,7 +1561,7 @@ DDDMP_TRUE='#'
 DEFS='-DHAVE_CONFIG_H'
 DEPDIR='.deps'
 DLLTOOL='false'
-DOXYGEN=''
+DOXYGEN='doxygen'
 DSYMUTIL=''
 DUMPBIN=''
 ECHO_C=''
@@ -1569,8 +1571,8 @@ EGREP='/usr/bin/grep -E'
 EXEEXT=''
 FGREP='/usr/bin/grep -F'
 GREP='/usr/bin/grep'
-HAVE_DOXYGEN_FALSE=''
-HAVE_DOXYGEN_TRUE='#'
+HAVE_DOXYGEN_FALSE='#'
+HAVE_DOXYGEN_TRUE=''
 HAVE_PDFLATEX_FALSE=''
 HAVE_PDFLATEX_TRUE='#'
 HAVE_PTHREADS_FALSE='#'

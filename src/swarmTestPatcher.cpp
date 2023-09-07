@@ -18,6 +18,19 @@ patchTrans(std::vector<std::vector<int>> &trans, std::vector<std::vector<int>> p
 }
 
 void
+patcher::clean() {
+    _inited = false;
+    _robotNum = 0;
+    _edgeIDs.clear();
+    _edgeMax.clear();
+    _tranPrefix.trans.clear();
+    // _tranSuffix[i] means transition path to ith goal
+    for (int i = 0; i < _tranSuffix.size(); i++) {
+        _tranSuffix[i].trans.clear();
+    }
+}
+
+void
 patcher::makePatch(std::vector<std::vector<int>> patch, int goalID, int patchStart, int patchEnd) {
     if (goalID == -1) {
         return patchTrans(_tranPrefix.trans, patch, patchStart, patchEnd);
@@ -30,46 +43,74 @@ patcher::makePatch(std::vector<std::vector<int>> patch, int goalID, int patchSta
 }
 
 bool
-validState(std::vector<int> state, std::vector<int> edgeIDs, std::vector<int> newMaxs) {
-    for (int i = 0; i < edgeIDs.size(); i++) {
-        if ((edgeIDs[i] < 0) || (edgeIDs[i] >= state.size())) {
-            std::cout << "Wrong Edge ID: " << edgeIDs[i] << std::endl;
+patcher::validState(std::vector<int> state) {
+    for (int i = 0; i < _edgeIDs.size(); i++) {
+        // std::cout << "Edge ID: " << _edgeIDs[i] << ", has " << state[_edgeIDs[i]] << ", exceeds " << _edgeMax[i] << std::endl;
+        if ((_edgeIDs[i] < 0) || (_edgeIDs[i] >= state.size())) {
+            std::cout << "Wrong Edge ID: " << _edgeIDs[i] << std::endl;
             return false;
-        } else if (state[edgeIDs[i]] > newMaxs[i]) {
+        } else if (state[_edgeIDs[i]] > _edgeMax[i]) {
+            return false;
+        } else if (sumOverVec(state) != _robotNum) {
+            std::cout << "State Sum: " << sumOverVec(state) << ", robot num: " << _robotNum << std::endl;
             return false;
         }
     }
     return true;
 }
 
+// std::vector<std::pair<int, int>>
+// patcher::localizePatchModMax(std::vector<int> edgeIDs, std::vector<int> newMaxs) {
+//     std::vector<std::pair<int, int>> ret;
+//     if (edgeIDs.size() != newMaxs.size()) {
+//         std::cout << "Wrong modification size: " << edgeIDs.size() << ", " << newMaxs.size() << std::endl;
+//         return ret;
+//     }
+//     // check for prefix
+//     for (int i = 0; i < _tranPrefix.trans.size(); i++) {
+//         if (!(validState(_tranPrefix.trans[i], edgeIDs, newMaxs))) {
+//             ret.push_back(std::make_pair(-1, i));
+//         }
+//     }
+//     // and suffix
+//     for (int i = 0; i < _tranSuffix.size(); i++) {
+//         for (int j = 0; j < _tranSuffix[i].trans.size(); j++) {
+//             if (!(validState(_tranSuffix[i].trans[j], edgeIDs, newMaxs))) {
+//                 ret.push_back(std::make_pair(i, j));
+//             }
+//         }
+//     }
+//     return ret;
+// }
+
+// std::vector<std::pair<int, int>>
+// patcher::localizePatchRmvEdg(int edgeID) {
+//     std::vector<int> eids, maxs;
+//     eids.push_back(edgeID);
+//     maxs.push_back(0);
+//     return localizePatchModMax(eids, maxs);
+// }
+
 std::vector<std::pair<int, int>>
-patcher::localizePatchModMax(std::vector<int> edgeIDs, std::vector<int> newMaxs) {
+patcher::localizePatch() {
     std::vector<std::pair<int, int>> ret;
-    if (edgeIDs.size() != newMaxs.size()) {
-        std::cout << "Wrong modification size: " << edgeIDs.size() << ", " << newMaxs.size() << std::endl;
+    if (_edgeIDs.size() != _edgeMax.size()) {
+        std::cout << "Wrong modification size: " << _edgeIDs.size() << ", " << _edgeMax.size() << std::endl;
         return ret;
     }
     // check for prefix
     for (int i = 0; i < _tranPrefix.trans.size(); i++) {
-        if (!(validState(_tranPrefix.trans[i], edgeIDs, newMaxs))) {
+        if (!(validState(_tranPrefix.trans[i]))) {
             ret.push_back(std::make_pair(-1, i));
         }
     }
     // and suffix
     for (int i = 0; i < _tranSuffix.size(); i++) {
         for (int j = 0; j < _tranSuffix[i].trans.size(); j++) {
-            if (!(validState(_tranSuffix[i].trans[j], edgeIDs, newMaxs))) {
+            if (!(validState(_tranSuffix[i].trans[j]))) {
                 ret.push_back(std::make_pair(i, j));
             }
         }
     }
     return ret;
-}
-
-std::vector<std::pair<int, int>>
-patcher::localizePatchRmvEdg(int edgeID) {
-    std::vector<int> eids, maxs;
-    eids.push_back(edgeID);
-    maxs.push_back(0);
-    return localizePatchModMax(eids, maxs);
 }

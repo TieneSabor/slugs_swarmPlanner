@@ -692,7 +692,7 @@ CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = false
-DOXYGEN = 
+DOXYGEN = doxygen
 DSYMUTIL = 
 DUMPBIN = 
 ECHO_C = 
@@ -997,8 +997,8 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-#Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
-#	cd $(top_builddir) && $(SHELL) ./config.status $@
+Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 #doc/cudd.tex: $(top_builddir)/config.status $(top_srcdir)/doc/cudd.tex.in
 #	cd $(top_builddir) && $(SHELL) ./config.status $@
 dddmp/exp/test1.sh: $(top_builddir)/config.status $(top_srcdir)/dddmp/exp/test1.sh.in
@@ -3021,7 +3021,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean-local:
+#clean-local:
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
@@ -3160,14 +3160,14 @@ dist-hook:
 
 all: html/index.html doc/cudd.pdf
 
-#html/index.html: Doxyfile $(lib_LTLIBRARIES)
-#	@if $(AM_V_P); then dest='2>&1'; else dest='> /dev/null 2>&1'; fi; \
-#	eval "$(DOXYGEN) $< $${dest}"
+html/index.html: Doxyfile $(lib_LTLIBRARIES)
+	@if $(AM_V_P); then dest='2>&1'; else dest='> /dev/null 2>&1'; fi; \
+	eval "$(DOXYGEN) $< $${dest}"
 
-#clean-local:
-#	rm -rf html doxygen_sqlite3.db
+clean-local:
+	rm -rf html doxygen_sqlite3.db
 
-html/index.html:
+#html/index.html:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

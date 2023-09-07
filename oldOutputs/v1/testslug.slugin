@@ -1,0 +1,32 @@
+[INPUT]
+
+
+[OUTPUT]
+# A
+# B
+# C
+# D
+# E
+
+
+[ENV_TRANS]
+
+
+[ENV_INIT]
+
+
+[SYS_TRANS]
+# out degree
+# | ! A | A' | B' | C' D'
+# | ! B | A' | B' | C' E'
+# | ! C | A' | B' | C' | D' E'
+# | ! D | A' | C' | D' E'
+# | ! E | B' | C' | D' E'
+# in degree
+# | ! A' | A | B | C D
+# | ! B' | A | B | C E
+# | ! C' | A | B | C | D E
+# | ! D' | A | C | D E
+# | ! E' | B | C | D E
+# user set-up safety
+# ! D

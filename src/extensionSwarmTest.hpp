@@ -16,15 +16,23 @@ class XSwarmTest : public T {
     // New variables
     std::string outputFilename;
     convert2MiniZinc *pcvz;
+    patcher p4Plan;
     BF safetySysNoRM, initState;
     std::vector<std::vector<BF>> layers2Goals;
     // specify modification
-    std::string modReg = "Q";
-    int modMax = 6;
+    std::string modReg;
+    int modMax;
+    std::string rmvEdgeFrom, rmvEdgeTo;
+    // std::string reasgnFrom, reasgnTo;
+    std::vector<int> reasgnRegionState;
+    int reasgnStateNum, reasgnGoalNum;
+    // explicit strategy
+    std::vector<std::vector<int>> explicitStrategy;
 
     // Inherited stuff used
     using T::addVariable;
     using T::computeVariableInformation;
+    using T::determinize;
     using T::doesVariableInheritType;
     using T::initEnv;
     using T::initSys;
@@ -74,6 +82,18 @@ class XSwarmTest : public T {
     int checkLayer(BF tbc, int goalID);
 
     void printStrategyBDD(BF combinedStrategy, std::string filename);
+
+    void safetySys2IntStateRec(BF F, std::vector<std::pair<int, int>> edgePred, std::vector<std::pair<int, bool>> literal, std::vector<std::vector<std::pair<int, bool>>> &literals);
+
+    void safetySys2IntState();
+
+    void testingBF();
+
+    void computeExplicitStrategy(std::vector<BF> positionalStrategiesForTheIndividualGoals);
+
+    void reallocation();
+
+    bool patchForGoal(int goalID, std::vector<std::pair<int, int>> locP);
 
   public:
     void execute() {
