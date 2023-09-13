@@ -24,6 +24,16 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::init(std::list<std::string> &
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 BF
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::getVarFromCVZID(bool Pre, int cvzID) {
+    if (Pre) {
+        return variables[2 * cvzID];
+    } else {
+        return variables[2 * cvzID + 1];
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+BF
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::regAsn2BF(std::vector<int> rA) {
     BF ret = mgr.constantTrue();
     // slug pre-var  id = 2*RM id in cvz
@@ -395,396 +405,51 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetySys2IntState() {
 }
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
-void
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy(std::vector<BF> positionalStrategiesForTheIndividualGoals) {
-    // prefix: initial condition to the first goal
-    BF prefixStrategy = positionalStrategiesForTheIndividualGoals[0];
-    std::vector<int> initAsn = pcvz->getRegionInit();
-    std::vector<std::vector<int>> regAsns;
-    BF initState = regAsn2BF(initAsn);
-    BF curState = initState;
-    while (true) {
-        std::vector<int> curRA;
-        // discretize the state
-        for (unsigned int i = 0; i < variables.size(); i++) {
-            // (!) the sequence should be A, A' B, B' ...so the sequence will work
-            if (doesVariableInheritType(i, Pre)) {
-                curRA.push_back((((curState & variables[i]).isFalse()) ? 0 : 1));
-            }
-        }
-        regAsns.push_back(curRA);
-        // check if the goal is reached
-        if (!(curState & livenessGuarantees[0]).isFalse()) {
-            break;
-        }
-        // calculate the next state
-        curState &= positionalStrategiesForTheIndividualGoals[0];
-        curState = determinize(curState, postVars);
-        curState = curState.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
-    }
-    // Do the CP for that
-    pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns, false);
-    std::vector<std::vector<int>> planPrefix = pcvz->getPatch();
-    for (int i = 0; i < planPrefix.size(); i++) {
-        p4Plan.addTransitionPrefix(planPrefix[i]);
-    }
-    // the last region assignment in the prefix
-    std::vector<int> rA_firstGoal = pcvz->edge2RegionState(false, planPrefix[planPrefix.size() - 1]);
-    std::vector<int> rA = rA_firstGoal;
-    // suffix: first goal to second, second to third..., last to the first, and do the CP for each
-    for (int g = 0; g < livenessGuarantees.size(); g++) {
-        std::cout << "Generate Suffix Part of the plan" << std::endl;
-        // update the new initial condition
-        for (int i = 0; i < pcvz->getRegionNum(); i++) {
-            pcvz->setRegionConstByIndex(i, -1, rA[i], -1);
-        }
-        // for the "last to the first", do also the final condition
-        if (g == (livenessGuarantees.size() - 1)) {
-            for (int i = 0; i < pcvz->getRegionNum(); i++) {
-                pcvz->setRegionConstByIndex(i, -1, -1, rA_firstGoal[i]);
-            }
-        }
-        // calculate the symbolic plan
-        int goalID = (g + 1) % livenessGuarantees.size();
-        BF suffixStrategy_g = positionalStrategiesForTheIndividualGoals[goalID];
-        std::vector<int> initAsn_g = pcvz->getRegionInit();
-        std::vector<std::vector<int>> regAsns_g;
-        BF initState_g = regAsn2BF(initAsn_g);
-        BF curState_g = initState_g;
-        while (true) {
-            std::vector<int> curRA;
-            // discretize the state
-            for (unsigned int i = 0; i < variables.size(); i++) {
-                // (!) the sequence should be A, A' B, B' ...so the sequence will work
-                if (doesVariableInheritType(i, Pre)) {
-                    curRA.push_back((((curState_g & variables[i]).isFalse()) ? 0 : 1));
+BF
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::getIntermediateStateFeedback(std::vector<std::vector<int>> transitions) {
+    BF fb = mgr.constantTrue();
+    // iterate for each transitions
+    int nT = transitions.size();
+    for (int t = 0; t < nT; t++) {
+        std::vector<int> lastState = pcvz->edge2RegionState(true, transitions[t]);
+        std::vector<int> thisState = pcvz->edge2RegionState(false, transitions[t]);
+        // check for intermediate state
+        // phi_tau_1
+        BF phi_tau_1 = mgr.constantTrue();
+        for (int li = 0; li < lastState.size(); li++) {
+            for (int ti = 0; ti < thisState.size(); ti++) {
+                int liAs = lastState[li], tiAs = thisState[ti];
+                if ((liAs > 0) && (tiAs > 0)) {
+                    phi_tau_1 &= getVarFromCVZID(true, li) | getVarFromCVZID(true, ti);
                 }
             }
-            regAsns_g.push_back(curRA);
-            // check if the goal is reached
-            // TODO: if the guarantee is a set, then the previous guarantee[0] don't have to be this one, require modification here
-            if (!(curState_g & livenessGuarantees[goalID]).isFalse()) {
-                break;
+        }
+        // phi_tau_2
+        BF phi_tau_2 = mgr.constantTrue();
+        for (int si = 0; si < lastState.size(); si++) {
+            if ((lastState[si] == 0) && (thisState[si] == 0)) {
+                phi_tau_2 &= !getVarFromCVZID(true, si);
             }
-            // calculate the next state
-            curState_g &= suffixStrategy_g;
-            curState_g = determinize(curState_g, postVars);
-            curState_g = curState_g.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
         }
-        // Do the CP for that
-        pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns_g, g == (livenessGuarantees.size() - 1));
-        std::vector<std::vector<int>> planSuffix = pcvz->getPatch();
-        p4Plan.newGoalSuffix();
-        for (int i = 0; i < planSuffix.size(); i++) {
-            p4Plan.addTransitionSuffix(planSuffix[i], g);
+        // phi_q_i
+        BF phi_q_i = regAsn2BF(lastState);
+        BF phi_q_iP1 = regAsn2BF(thisState);
+        // check that
+        BF checker = phi_tau_1 & phi_tau_2 & (!phi_q_i) & (!phi_q_iP1);
+        // if not passed, formulate feedbacks
+        if (!(checker & (!safetySysNoRM)).isFalse()) {
+            std::cout << "Transition " << t << " has dangerous intermediate state." << std::endl;
+            pcvz->printTransition(transitions[t]);
+            BF transBF = phi_q_i & (phi_q_iP1.SwapVariables(varVectorPre, varVectorPost));
+            fb &= !transBF;
         }
-        rA = pcvz->edge2RegionState(false, planSuffix[planSuffix.size() - 1]);
     }
-    // print a dot for testing
-    std::vector<std::vector<int>> wholePlan = p4Plan.getAllTransitions();
-    pcvz->printPatch2Dot("originalPlans", wholePlan);
+    return fb;
 }
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
-void
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
-    std::vector<std::vector<int>> dum;
-    if (reasgnRegionState.size() != 0) {
-        std::cout << "=========<Do the Re-Assignment: Should not work with Changing the capacity or Removing the edge>==========" << std::endl;
-        // Check if the reassignment value is valid
-        std::vector<int> maxNs = pcvz->getRegionCap();
-        auto tgtStateAs = pcvz->edge2RegionState(true, p4Plan.getTransition(reasgnGoalNum, reasgnStateNum));
-        for (int i = 0; i < maxNs.size(); i++) {
-            if (reasgnRegionState[i] > maxNs[i]) {
-                std::cout << "Re-assignment " << reasgnRegionState[i] << " is larger than the capacity" << maxNs[i] << std::endl;
-                return;
-            }
-            if ((reasgnRegionState[i] == 0) != (tgtStateAs[i] == 0)) {
-                std::cout << "Re-assignment " << reasgnRegionState[i] << " and original assignment " << tgtStateAs[i] << " have different state." << std::endl;
-                return;
-            }
-        }
-
-        // calculate the fixpoint for the state
-        BF raTranRM = getRMSG();
-        BF rSG = safetySysNoRM & raTranRM;
-        BFFixedPoint rMu1(mgr.constantFalse());
-        bool checkReach = false;
-        BF raState = regAsn2BF(tgtStateAs);
-        BF lastLayer = raState;
-        BF rstrategy = mgr.constantFalse();
-        int layerNumb = 0;
-        while (!(rMu1.isFixedPointReached())) {
-            layerNumb++;
-            BF pathFnd = rSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
-            BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
-            lastLayer |= thisLayer;
-            rstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
-            // rstrategy |= pathFnd;
-            rMu1.update(lastLayer);
-        }
-        std::cout << "Max Re-assignment Patch Layer Number: " << layerNumb << std::endl;
-
-        // do the CP, expand the patch size until the max level is reached
-        int tranNumb = 1;
-        for (int i = 0; i < maxNs.size(); i++) {
-            pcvz->setRegionConstByIndex(i, -1, tgtStateAs[i], reasgnRegionState[i]);
-        }
-        std::string rafilename = "reallocation_cnf";
-        std::string header_ra_cnf = "";
-        int rclausesInCNFIndex[1000000], rclauseN = 0, rvarSize = 0;
-        mgr.writeBDDToCNFFile(rafilename.c_str(), header_ra_cnf,
-                              rstrategy, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
-        pcvz->clearClauses();
-        for (int i = 0; i < rclauseN; i++) {
-            pcvz->newClause();
-            // std::cout << "Clause #" << i << " ";
-            for (int j = 0; j < rvarSize; j++) {
-                // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
-                std::string lit = variableNames[j];
-                switch (rclausesInCNFIndex[i * rvarSize + j]) {
-                case 0:
-                    pcvz->addLiteral2LastClauseByName(lit);
-                    break;
-                case 1:
-                    pcvz->addLiteral2LastClauseByName("-" + lit);
-                    break;
-                case 2:
-                    break;
-                default:
-                    std::cout << "Unknown literal value: " << rclausesInCNFIndex[i * rvarSize + j] << std::endl;
-                }
-            }
-        }
-        std::vector<std::vector<int>> ppatch;
-        while (tranNumb <= layerNumb) {
-            pcvz->printMiniZinc(toPatcher, patching, "swarmTestReasgnFork", tranNumb, dum, true);
-            ppatch = pcvz->getPatch();
-            if (ppatch.size() > 0) {
-                // pcvz->printPatch2Dot("ReAssignment");
-                std::cout << "patch Found" << std::endl;
-                break;
-            }
-            tranNumb++;
-        }
-        if (ppatch.size() == 0) {
-            std::cout << "Weird... Reallocation can't found." << std::endl;
-            return;
-        }
-
-        // update the new assignment to the suffix part of the original patch
-        // will have to use another CP...
-        // new prefix
-        std::vector<std::vector<int>> oldAsgn;
-        for (int i = reasgnStateNum; i < p4Plan.getSuffixSize(reasgnGoalNum); i++) {
-            oldAsgn.push_back(p4Plan.getTransition(reasgnGoalNum, i));
-        }
-        for (int i = 0; i < maxNs.size(); i++) {
-            // pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], plan[plan.size() - 1][i]);
-            pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], -1);
-        }
-        pcvz->printMiniZinc(toPatcher, reassignment, "newAssignPrefix", -1, oldAsgn, false);
-        auto prefixPatch = pcvz->getPatch();
-        if (prefixPatch.size() == 0) {
-            std::cout << "Update the plan failed after the re-allocation. " << std::endl;
-            return;
-        }
-        std::vector<int> rA_firstGoal = pcvz->edge2RegionState(false, prefixPatch.back());
-        std::vector<int> rA = rA_firstGoal;
-        std::vector<std::vector<std::vector<int>>> suffixes;
-        // update the plan with the new prefix
-        // new suffix
-        for (int g = 0; g < livenessGuarantees.size(); g++) {
-            int goalID = (g + reasgnGoalNum + 1) % livenessGuarantees.size();
-            oldAsgn.clear();
-            for (int i = 0; i < p4Plan.getSuffixSize(goalID); i++) {
-                oldAsgn.push_back(p4Plan.getTransition(goalID, i));
-            }
-            for (int i = 0; i < maxNs.size(); i++) {
-                // rA_firstGoal is only used when g == reasgnGoalNum
-                pcvz->setRegionConstByIndex(i, -1, rA[i], rA_firstGoal[i]);
-            }
-            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignSuffix", -1, oldAsgn, (g == (livenessGuarantees.size() - 1)));
-            auto suffixPatch = pcvz->getPatch();
-            if (suffixPatch.size() == 0) {
-                std::cout << "Update the plan failed after the re-allocation. " << std::endl;
-                return;
-                // break;
-            }
-            rA = pcvz->edge2RegionState(false, suffixPatch.back());
-            suffixes.push_back(suffixPatch);
-        }
-        // make patch if the updated assignment exceed capacities somewhere else
-        p4Plan.clean();
-        for (int i = 0; i < ppatch.size(); i++) {
-            p4Plan.addTransitionPrefix(ppatch[i]);
-        }
-        for (int i = 0; i < prefixPatch.size(); i++) {
-            p4Plan.addTransitionPrefix(prefixPatch[i]);
-        }
-        for (int g = 0; g < suffixes.size(); g++) {
-            p4Plan.newGoalSuffix();
-            for (int i = 0; i < suffixes[g].size(); i++) {
-                p4Plan.addTransitionSuffix(suffixes[g][i], 0);
-            }
-        }
-
-        // print as dot
-        pcvz->printPatch2Dot("ReAssigned", p4Plan.getAllTransitions());
-
-        // update p4Plan edge capacity
-        std::vector<int> edgeMax = pcvz->getEdgeMax();
-        std::vector<int> edgeIDs;
-        for (int i = 0; i < edgeMax.size(); i++) {
-            edgeIDs.push_back(i);
-        }
-        p4Plan.updateCapacity(edgeIDs, edgeMax);
-        // return;
-    }
-}
-
-template <class T, bool oneStepRecovery, bool systemGoalEncoded>
-bool
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP) {
-    std::cout << "=========<Patching For Goal: " << goalID << " >==========" << std::endl;
-    std::vector<std::vector<int>> dum;
-    // check for the patch bound
-    int tMax = p4Plan.getSuffixSize(goalID) - 1;
-    int tIni = tMax, tFnl = 0;
-    for (int i = 0; i < locP.size(); i++) {
-        if (locP[i].first == goalID) {
-            int tN = locP[i].second;
-            std::cout << "Problematic State: " << tN << std::endl;
-            if (tN > tFnl) {
-                tFnl = tN;
-            }
-            if (tN < tIni) {
-                tIni = tN;
-            }
-        }
-    }
-    // do a while loop until we find a patch
-    std::cout << "=========<Patching Iteration>==========" << std::endl;
-    bool patchFound = false;
-    if (tIni > tFnl) {
-        std::cout << "No need to modify in this case" << std::endl;
-        patchFound = true;
-        return patchFound;
-    }
-    while (!patchFound) {
-        // get init/goal state as BF
-        std::cout << "=========<Patching Iteration: Getting Boundaries>==========" << std::endl;
-        std::cout << "Initial State: " << tIni << ", final state: " << tFnl << std::endl;
-        auto iniStateAs = pcvz->edge2RegionState(true, p4Plan.getTransition(goalID, tIni));
-        auto fnlStateAs = pcvz->edge2RegionState(false, p4Plan.getTransition(goalID, tFnl));
-        BF iniState = regAsn2BF(iniStateAs);
-        BF fnlState = regAsn2BF(fnlStateAs);
-        // check reachability: one goal, one init and no env. vars...
-        std::cout << "=========<Patching Iteration: Check Reachability>==========" << std::endl;
-        BF newTranRM = getRMSG();
-        BF pSG = safetySysNoRM & newTranRM;
-        BFFixedPoint pMu1(mgr.constantFalse());
-        bool checkReach = false;
-        BF lastLayer = fnlState;
-        BF pstrategy = mgr.constantFalse();
-        int layerNumb = 0;
-        // while (!checkReach) {
-        while (true) {
-            if (pMu1.isFixedPointReached()) {
-                break;
-            }
-            layerNumb++;
-            BF pathFnd = pSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
-            BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
-            if (!(thisLayer & iniState).isFalse()) {
-                checkReach = true;
-            }
-            lastLayer |= thisLayer;
-            // pstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
-            pstrategy |= pathFnd;
-            pMu1.update(lastLayer);
-        }
-        std::cout << "Patch Layer Number Guess: " << layerNumb << std::endl;
-        // if reachable, synthesis the strategy and do the cp
-        if (checkReach) {
-            std::cout << "=========<Patching Iteration: Trying CP the Patch>==========" << std::endl;
-            for (int i = 0; i < iniStateAs.size(); i++) {
-                pcvz->setRegionConstByIndex(i, -1, iniStateAs[i], fnlStateAs[i]);
-            }
-            std::string filename = "patching_cnf";
-            std::string header_cnf = "";
-            int pclausesInCNFIndex[1000000], pclauseN = 0, pvarSize = 0;
-            mgr.writeBDDToCNFFile(filename.c_str(), header_cnf,
-                                  pstrategy, variables, variableNames, pclausesInCNFIndex, pclauseN, pvarSize);
-            pcvz->clearClauses();
-            for (int i = 0; i < pclauseN; i++) {
-                pcvz->newClause();
-                // std::cout << "Clause #" << i << " ";
-                for (int j = 0; j < pvarSize; j++) {
-                    // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
-                    std::string lit = variableNames[j];
-                    switch (pclausesInCNFIndex[i * pvarSize + j]) {
-                    case 0:
-                        pcvz->addLiteral2LastClauseByName(lit);
-                        break;
-                    case 1:
-                        pcvz->addLiteral2LastClauseByName("-" + lit);
-                        break;
-                    case 2:
-                        break;
-                    default:
-                        std::cout << "Unknown literal value: " << pclausesInCNFIndex[i * pvarSize + j] << std::endl;
-                    }
-                }
-                // std::cout << std::endl;
-            }
-            // pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", tFnl - tIni + 1, dum, true);
-            // increase the layer number until a solution is found
-            std::vector<std::vector<int>> ppatch;
-            for (int i = (tFnl - tIni + 1); i <= layerNumb; i++) {
-                std::cout << "Trying for " << i << " layers" << std::endl;
-                pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", i, dum, true);
-                ppatch = pcvz->getPatch();
-                if (ppatch.size() > 0) {
-                    break;
-                }
-            }
-            if (ppatch.size() > 0) {
-                // pcvz->printPatch2Dot("Patch");
-                p4Plan.makePatch(ppatch, goalID, tIni, tFnl);
-                std::cout << "patch Found" << std::endl;
-                // p4Plan.printTransitions();
-                patchFound = true;
-            } else {
-                checkReach = false;
-            }
-        }
-        // if not reachable or the cp failed, increase the patch horizon
-        std::cout << "=========<Patching Iteration: Expand the Patch Horizon>==========" << std::endl;
-        int ntIni = std::max(0, tIni - 1);
-        int ntFnl = std::min((int) tMax, tFnl + 1);
-        if ((ntIni == tIni) && (ntFnl == tFnl)) {
-            break;
-        } else {
-            tIni = ntIni;
-            tFnl = ntFnl;
-        }
-    }
-
-    return patchFound;
-}
-
-template <class T, bool oneStepRecovery, bool systemGoalEncoded>
-void
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrategy(std::string filename) {
-
-    // We don't want any reordering from this point onwards, as
-    // the BDD manipulations from this point onwards are 'kind of simple'.
-    mgr.setAutomaticOptimisation(false);
-
-    // before synthesis, check the layer
-    // updateL2G();
-
+std::vector<BF>
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeSymbolicStrategy() {
     // Prepare initial to-do list from the allowed initial states
     BF init = (oneStepRecovery) ? (winningPositions & initSys)
                                 : (winningPositions & initSys & initEnv);
@@ -884,18 +549,639 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
                  livenessGuarantees[i]);
         }
     }
-    // solve the CP for only one liveness guarantee
+
+    return positionalStrategiesForTheIndividualGoals;
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+void
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
+    // synthesize repeatly until it passes the intermediate state check
+    std::vector<std::vector<int>> regAsns;
+    std::vector<BF> positionalStrategiesForTheIndividualGoals;
+    std::vector<std::vector<int>> planPrefix;
+    while (true) {
+        // Get symbolic strategy first
+        T::execute();
+        positionalStrategiesForTheIndividualGoals = computeSymbolicStrategy();
+        // prefix: initial condition to the first goal
+        BF prefixStrategy = positionalStrategiesForTheIndividualGoals[0];
+        std::vector<int> initAsn = pcvz->getRegionInit();
+        regAsns.clear();
+        BF initState = regAsn2BF(initAsn);
+        BF curState = initState;
+        while (true) {
+            std::vector<int> curRA;
+            // discretize the state
+            for (unsigned int i = 0; i < variables.size(); i++) {
+                // (!) the sequence should be A, A' B, B' ...so the sequence will work
+                if (doesVariableInheritType(i, Pre)) {
+                    curRA.push_back((((curState & variables[i]).isFalse()) ? 0 : 1));
+                }
+            }
+            regAsns.push_back(curRA);
+            // check if the goal is reached
+            if (!(curState & livenessGuarantees[0]).isFalse()) {
+                break;
+            }
+            // calculate the next state
+            curState &= positionalStrategiesForTheIndividualGoals[0];
+            curState = determinize(curState, postVars);
+            curState = curState.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
+        }
+        // Do the CP for that
+        pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns, false);
+        planPrefix = pcvz->getPatch();
+        // check for transitions
+        BF isFB = getIntermediateStateFeedback(planPrefix);   // Intermediate State Feed Back
+        if (isFB.isTrue()) {
+            break;
+        }
+        // std::cout << "Intermediate State Checker Failed. " << std::endl;
+        safetySys &= isFB;
+    }
+    // add the plan to the patcher
+    for (int i = 0; i < planPrefix.size(); i++) {
+        p4Plan.addTransitionPrefix(planPrefix[i]);
+    }
+    // the last region assignment in the prefix
+    std::vector<int> rA_firstGoal = pcvz->edge2RegionState(false, planPrefix[planPrefix.size() - 1]);
+    std::vector<int> rA = rA_firstGoal;
+    // suffix: first goal to second, second to third..., last to the first, and do the CP for each
+    for (int g = 0; g < livenessGuarantees.size(); g++) {
+        std::cout << "Generate Suffix Part of the plan" << std::endl;
+        // update the new initial condition
+        for (int i = 0; i < pcvz->getRegionNum(); i++) {
+            pcvz->setRegionConstByIndex(i, -1, rA[i], -1);
+        }
+        // for the "last to the first", do also the final condition
+        if (g == (livenessGuarantees.size() - 1)) {
+            for (int i = 0; i < pcvz->getRegionNum(); i++) {
+                pcvz->setRegionConstByIndex(i, -1, -1, rA_firstGoal[i]);
+            }
+        }
+        // calculate the symbolic plan
+        std::vector<std::vector<int>> regAsns_g;
+        std::vector<std::vector<int>> planSuffix;
+        while (true) {
+            // synthesis explicit strategy
+            int goalID = (g + 1) % livenessGuarantees.size();
+            BF suffixStrategy_g = positionalStrategiesForTheIndividualGoals[goalID];
+            std::vector<int> initAsn_g = pcvz->getRegionInit();
+            regAsns_g.clear();
+            BF initState_g = regAsn2BF(initAsn_g);
+            BF curState_g = initState_g;
+            while (true) {
+                std::vector<int> curRA;
+                // discretize the state
+                for (unsigned int i = 0; i < variables.size(); i++) {
+                    // (!) the sequence should be A, A' B, B' ...so the sequence will work
+                    if (doesVariableInheritType(i, Pre)) {
+                        curRA.push_back((((curState_g & variables[i]).isFalse()) ? 0 : 1));
+                    }
+                }
+                regAsns_g.push_back(curRA);
+                // check if the goal is reached
+                // TODO: if the guarantee is a set, then the previous guarantee[0] don't have to be this one, require modification here
+                if (!(curState_g & livenessGuarantees[goalID]).isFalse()) {
+                    break;
+                }
+                // calculate the next state
+                curState_g &= suffixStrategy_g;
+                curState_g = determinize(curState_g, postVars);
+                curState_g = curState_g.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
+            }
+            // Do the CP for that
+            pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns_g, g == (livenessGuarantees.size() - 1));
+            planSuffix = pcvz->getPatch();
+            // check for intermediate states
+            BF isFB = getIntermediateStateFeedback(planSuffix);   // Intermediate State Feed Back
+            if (isFB.isTrue()) {
+                break;
+            }
+            // std::cout << "Intermediate State Checker Failed. " << std::endl;
+            safetySys &= isFB;
+            // Get symbolic strategy
+            T::execute();
+            positionalStrategiesForTheIndividualGoals = computeSymbolicStrategy();
+        }
+        p4Plan.newGoalSuffix();
+        for (int i = 0; i < planSuffix.size(); i++) {
+            p4Plan.addTransitionSuffix(planSuffix[i], g);
+        }
+        rA = pcvz->edge2RegionState(false, planSuffix[planSuffix.size() - 1]);
+    }
+    // print a dot for testing
+    std::vector<std::vector<int>> wholePlan = p4Plan.getAllTransitions();
+    pcvz->printPatch2Dot("originalPlans", wholePlan);
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+void
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
+    std::vector<std::vector<int>> dum;
+    if (reasgnRegionState.size() != 0) {
+        std::cout << "=========<Do the Re-Assignment: Should not work with Changing the capacity or Removing the edge>==========" << std::endl;
+        // Check if the reassignment value is valid
+        std::vector<int> maxNs = pcvz->getRegionCap();
+        auto tgtTransAs = p4Plan.getTransition(reasgnGoalNum, reasgnStateNum);
+        std::vector<int> tgtStateAs;
+        // check if we want the last state in the pre/suffix
+        if (tgtTransAs.size() == 0) {
+            tgtTransAs = p4Plan.getTransition(reasgnGoalNum, reasgnStateNum - 1);
+            tgtStateAs = pcvz->edge2RegionState(false, tgtTransAs);
+        } else {
+            tgtStateAs = pcvz->edge2RegionState(true, tgtTransAs);
+        }
+        for (int i = 0; i < maxNs.size(); i++) {
+            if (reasgnRegionState[i] > maxNs[i]) {
+                std::cout << "Re-assignment " << reasgnRegionState[i] << " is larger than the capacity" << maxNs[i] << std::endl;
+                return;
+            }
+            if ((reasgnRegionState[i] == 0) != (tgtStateAs[i] == 0)) {
+                std::cout << "Re-assignment " << reasgnRegionState[i] << " and original assignment " << tgtStateAs[i] << " have different state." << std::endl;
+                return;
+            }
+        }
+
+        // iteratively check for intermediate states
+        std::vector<std::vector<int>> ppatch;
+        BF isFB = mgr.constantTrue();
+        while (true) {
+            // calculate the fixpoint for the state
+            BF raTranRM = getRMSG();
+            BF rSG = safetySysNoRM & raTranRM & isFB;
+            BFFixedPoint rMu1(mgr.constantFalse());
+            bool checkReach = false;
+            BF raState = regAsn2BF(tgtStateAs);
+            BF lastLayer = raState;
+            BF rstrategy = mgr.constantFalse();
+            int layerNumb = 0;
+            while (!(rMu1.isFixedPointReached())) {
+                layerNumb++;
+                BF pathFnd = rSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
+                BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
+                lastLayer |= thisLayer;
+                rstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
+                // rstrategy |= pathFnd;
+                rMu1.update(lastLayer);
+            }
+            std::cout << "Max Re-assignment Patch Layer Number: " << layerNumb << std::endl;
+
+            // do the CP, expand the patch size until the max level is reached
+            int tranNumb = 1;
+            for (int i = 0; i < maxNs.size(); i++) {
+                pcvz->setRegionConstByIndex(i, -1, tgtStateAs[i], reasgnRegionState[i]);
+            }
+            std::string rafilename = "reallocation_cnf";
+            std::string header_ra_cnf = "";
+            int rclausesInCNFIndex[1000000], rclauseN = 0, rvarSize = 0;
+            mgr.writeBDDToCNFFile(rafilename.c_str(), header_ra_cnf,
+                                  rstrategy, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
+            pcvz->clearClauses();
+            for (int i = 0; i < rclauseN; i++) {
+                pcvz->newClause();
+                // std::cout << "Clause #" << i << " ";
+                for (int j = 0; j < rvarSize; j++) {
+                    // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
+                    std::string lit = variableNames[j];
+                    switch (rclausesInCNFIndex[i * rvarSize + j]) {
+                    case 0:
+                        pcvz->addLiteral2LastClauseByName(lit);
+                        break;
+                    case 1:
+                        pcvz->addLiteral2LastClauseByName("-" + lit);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        std::cout << "Unknown literal value: " << rclausesInCNFIndex[i * rvarSize + j] << std::endl;
+                    }
+                }
+            }
+            while (tranNumb <= layerNumb) {
+                pcvz->printMiniZinc(toPatcher, patching, "swarmTestReasgnFork", tranNumb, dum, true);
+                ppatch = pcvz->getPatch();
+                if (ppatch.size() > 0) {
+                    // pcvz->printPatch2Dot("ReAssignment");
+                    std::cout << "patch Found" << std::endl;
+                    break;
+                }
+                tranNumb++;
+            }
+            if (ppatch.size() == 0) {
+                std::cout << "Weird... Reallocation can't found." << std::endl;
+                return;
+            }
+            // check for intermediate states
+            BF isFB_this = getIntermediateStateFeedback(ppatch);   // Intermediate State Feed Back
+            isFB &= isFB_this;
+            if (isFB.isTrue()) {
+                break;
+            }
+        }
+
+        // update the new assignment to the suffix part of the original patch
+        // will have to use another CP...
+        // new prefix
+        std::vector<std::vector<int>> oldAsgn;
+        for (int i = reasgnStateNum; i < p4Plan.getSuffixSize(reasgnGoalNum); i++) {
+            oldAsgn.push_back(p4Plan.getTransition(reasgnGoalNum, i));
+        }
+        std::cout << "..." << std::endl;
+        std::vector<int> rA_firstGoal;
+        std::vector<std::vector<int>> prefixPatch;
+        if (oldAsgn.size() != 0) {
+            for (int i = 0; i < maxNs.size(); i++) {
+                // pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], plan[plan.size() - 1][i]);
+                pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], -1);
+            }
+            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignPrefix", -1, oldAsgn, false);
+            prefixPatch = pcvz->getPatch();
+            if (prefixPatch.size() == 0) {
+                std::cout << "Update the plan failed after the re-allocation. " << std::endl;
+                return;
+            }
+            rA_firstGoal = pcvz->edge2RegionState(false, prefixPatch.back());
+        } else {
+            rA_firstGoal = pcvz->edge2RegionState(false, ppatch.back());
+        }
+        std::vector<int> rA = rA_firstGoal;
+        std::vector<std::vector<std::vector<int>>> suffixes;
+        // update the plan with the new prefix
+        // new suffix
+        for (int g = 0; g < livenessGuarantees.size(); g++) {
+            int goalID = (g + reasgnGoalNum + 1) % livenessGuarantees.size();
+            oldAsgn.clear();
+            for (int i = 0; i < p4Plan.getSuffixSize(goalID); i++) {
+                oldAsgn.push_back(p4Plan.getTransition(goalID, i));
+            }
+            for (int i = 0; i < maxNs.size(); i++) {
+                // rA_firstGoal is only used when g == reasgnGoalNum
+                pcvz->setRegionConstByIndex(i, -1, rA[i], rA_firstGoal[i]);
+            }
+            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignSuffix", -1, oldAsgn, (g == (livenessGuarantees.size() - 1)));
+            auto suffixPatch = pcvz->getPatch();
+            if (suffixPatch.size() == 0) {
+                std::cout << "Update the plan failed after the re-allocation. " << std::endl;
+                return;
+                // break;
+            }
+            rA = pcvz->edge2RegionState(false, suffixPatch.back());
+            suffixes.push_back(suffixPatch);
+        }
+        // make patch if the updated assignment exceed capacities somewhere else
+        p4Plan.clean();
+        for (int i = 0; i < ppatch.size(); i++) {
+            p4Plan.addTransitionPrefix(ppatch[i]);
+        }
+        if (oldAsgn.size() != 0) {
+            for (int i = 0; i < prefixPatch.size(); i++) {
+                p4Plan.addTransitionPrefix(prefixPatch[i]);
+            }
+        }
+        for (int g = 0; g < suffixes.size(); g++) {
+            p4Plan.newGoalSuffix();
+            for (int i = 0; i < suffixes[g].size(); i++) {
+                p4Plan.addTransitionSuffix(suffixes[g][i], g);
+            }
+        }
+
+        // print as dot
+        pcvz->printPatch2Dot("ReAssigned", p4Plan.getAllTransitions());
+
+        // update p4Plan edge capacity
+        std::vector<int> edgeMax = pcvz->getEdgeMax();
+        std::vector<int> edgeIDs;
+        for (int i = 0; i < edgeMax.size(); i++) {
+            edgeIDs.push_back(i);
+        }
+        p4Plan.updateCapacity(edgeIDs, edgeMax);
+        // return;
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+void
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::updateRAS() {
+    rAs.clear();
+    // p4Plan.printTransitions();
+    for (int i = 0; i <= livenessGuarantees.size(); i++) {
+        std::vector<std::vector<int>> trans;
+        for (int j = 0; j < p4Plan.getSuffixSize(i - 1); j++) {
+            trans.push_back(pcvz->edge2RegionState(true, p4Plan.getTransition(i - 1, j)));
+        }
+        trans.push_back(pcvz->edge2RegionState(false, p4Plan.getTransition(i - 1, p4Plan.getSuffixSize(i - 1) - 1)));
+        rAs.push_back(trans);
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+std::vector<std::vector<int>>
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb) {
+    BF iniState = regAsn2BF(iniStateAs);
+    BF fnlState = regAsn2BF(fnlStateAs);
+    // iteratively find a patch that does not violate the intermediate states
+    BF isFB = mgr.constantTrue();
+    std::vector<std::vector<int>> ppatch;
+    while (true) {
+        // check reachability: one goal, one init and no env. vars...
+        std::cout << "=========<Patching Iteration: Check Reachability>==========" << std::endl;
+        BF newTranRM = getRMSG();
+        BF pSG = safetySysNoRM & newTranRM & isFB;
+        BFFixedPoint pMu1(mgr.constantFalse());
+        bool checkReach = false;
+        BF lastLayer = fnlState;
+        BF pstrategy = mgr.constantFalse();
+        int layerNumb = 0;
+        // while (!checkReach) {
+        while (true) {
+            if (pMu1.isFixedPointReached()) {
+                break;
+            }
+            layerNumb++;
+            BF pathFnd = pSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
+            BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
+            if (!(thisLayer & iniState).isFalse()) {
+                checkReach = true;
+            }
+            lastLayer |= thisLayer;
+            // pstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
+            pstrategy |= pathFnd;
+            pMu1.update(lastLayer);
+        }
+        std::cout << "Patch Layer Number Guess: " << layerNumb << std::endl;
+        // if reachable, synthesis the strategy and do the cp
+        if (checkReach) {
+            std::cout << "=========<Patching Iteration: Trying CP the Patch>==========" << std::endl;
+            for (int i = 0; i < iniStateAs.size(); i++) {
+                pcvz->setRegionConstByIndex(i, -1, iniStateAs[i], fnlStateAs[i]);
+            }
+            std::string filename = "patching_cnf";
+            std::string header_cnf = "";
+            int pclausesInCNFIndex[1000000], pclauseN = 0, pvarSize = 0;
+            mgr.writeBDDToCNFFile(filename.c_str(), header_cnf,
+                                  pstrategy, variables, variableNames, pclausesInCNFIndex, pclauseN, pvarSize);
+            pcvz->clearClauses();
+            for (int i = 0; i < pclauseN; i++) {
+                pcvz->newClause();
+                for (int j = 0; j < pvarSize; j++) {
+                    std::string lit = variableNames[j];
+                    switch (pclausesInCNFIndex[i * pvarSize + j]) {
+                    case 0:
+                        pcvz->addLiteral2LastClauseByName(lit);
+                        break;
+                    case 1:
+                        pcvz->addLiteral2LastClauseByName("-" + lit);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        std::cout << "Unknown literal value: " << pclausesInCNFIndex[i * pvarSize + j] << std::endl;
+                    }
+                }
+            }
+        }
+        // increase the layer number until a solution is found
+        ppatch.clear();
+        for (int i = expLayNumb; i <= layerNumb; i++) {
+            std::cout << "Trying for " << i << " layers" << std::endl;
+            std::vector<std::vector<int>> dum;
+            pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", i, dum, true);
+            ppatch = pcvz->getPatch();
+            if (ppatch.size() > 0) {
+                break;
+            }
+        }
+        if (ppatch.size() > 0) {
+            // check for intermediate states
+            BF isFB_this = getIntermediateStateFeedback(ppatch);   // Intermediate State Feed Back
+            isFB &= isFB_this;
+            if (isFB_this.isTrue()) {
+                std::cout << "patch Found" << std::endl;
+                return ppatch;
+            }
+        } else {
+            // synthesis failed for the given initial/final state
+            return ppatch;
+        }
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+bool
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP) {
+    std::cout << "=========<Patching For Goal: " << goalID << " >==========" << std::endl;
+    std::vector<std::vector<int>> dum;
+    // check for the patch bound
+    int tMax = p4Plan.getSuffixSize(goalID) - 1;
+    int tIni = tMax, tFnl = 0;
+    for (int i = 0; i < locP.size(); i++) {
+        if (locP[i].first == goalID) {
+            int tN = locP[i].second;
+            std::cout << "Problematic State: " << tN << std::endl;
+            if (tN > tFnl) {
+                tFnl = tN;
+            }
+            if (tN < tIni) {
+                tIni = tN;
+            }
+        }
+    }
+    // do a while loop until we find a patch
+    std::cout << "=========<Patching Iteration>==========" << std::endl;
+    bool patchFound = false;
+    if (tIni > tFnl) {
+        std::cout << "No need to modify in this case" << std::endl;
+        patchFound = true;
+        return patchFound;
+    }
+    BF isFB = mgr.constantTrue();
+    while (!patchFound) {
+        // get init/goal state as BF
+        std::cout << "=========<Patching Iteration: Getting Boundaries>==========" << std::endl;
+        std::cout << "Initial State: " << tIni << ", final state: " << tFnl << std::endl;
+        // auto iniStateAs = pcvz->edge2RegionState(true, p4Plan.getTransition(goalID, tIni));
+        // auto fnlStateAs = pcvz->edge2RegionState(false, p4Plan.getTransition(goalID, tFnl));
+        auto iniStateAs = rAs[goalID + 1][tIni];
+        auto fnlStateAs = rAs[goalID + 1][tFnl + 1];
+        BF iniState = regAsn2BF(iniStateAs);
+        BF fnlState = regAsn2BF(fnlStateAs);
+        /*
+        // iteratively find a patch that does not violate the intermediate states
+        while (true) {
+            // check reachability: one goal, one init and no env. vars...
+            std::cout << "=========<Patching Iteration: Check Reachability>==========" << std::endl;
+            BF newTranRM = getRMSG();
+            BF pSG = safetySysNoRM & newTranRM & isFB;
+            BFFixedPoint pMu1(mgr.constantFalse());
+            bool checkReach = false;
+            BF lastLayer = fnlState;
+            BF pstrategy = mgr.constantFalse();
+            int layerNumb = 0;
+            // while (!checkReach) {
+            while (true) {
+                if (pMu1.isFixedPointReached()) {
+                    break;
+                }
+                layerNumb++;
+                BF pathFnd = pSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
+                BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
+                if (!(thisLayer & iniState).isFalse()) {
+                    checkReach = true;
+                }
+                lastLayer |= thisLayer;
+                // pstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
+                pstrategy |= pathFnd;
+                pMu1.update(lastLayer);
+            }
+            std::cout << "Patch Layer Number Guess: " << layerNumb << std::endl;
+            // if reachable, synthesis the strategy and do the cp
+            if (checkReach) {
+                std::cout << "=========<Patching Iteration: Trying CP the Patch>==========" << std::endl;
+                for (int i = 0; i < iniStateAs.size(); i++) {
+                    pcvz->setRegionConstByIndex(i, -1, iniStateAs[i], fnlStateAs[i]);
+                }
+                std::string filename = "patching_cnf";
+                std::string header_cnf = "";
+                int pclausesInCNFIndex[1000000], pclauseN = 0, pvarSize = 0;
+                mgr.writeBDDToCNFFile(filename.c_str(), header_cnf,
+                                      pstrategy, variables, variableNames, pclausesInCNFIndex, pclauseN, pvarSize);
+                pcvz->clearClauses();
+                for (int i = 0; i < pclauseN; i++) {
+                    pcvz->newClause();
+                    // std::cout << "Clause #" << i << " ";
+                    for (int j = 0; j < pvarSize; j++) {
+                        // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
+                        std::string lit = variableNames[j];
+                        switch (pclausesInCNFIndex[i * pvarSize + j]) {
+                        case 0:
+                            pcvz->addLiteral2LastClauseByName(lit);
+                            break;
+                        case 1:
+                            pcvz->addLiteral2LastClauseByName("-" + lit);
+                            break;
+                        case 2:
+                            break;
+                        default:
+                            std::cout << "Unknown literal value: " << pclausesInCNFIndex[i * pvarSize + j] << std::endl;
+                        }
+                    }
+                    // std::cout << std::endl;
+                }
+                // pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", tFnl - tIni + 1, dum, true);
+            }
+            // increase the layer number until a solution is found
+            std::vector<std::vector<int>> ppatch;
+            for (int i = (tFnl - tIni + 1); i <= layerNumb; i++) {
+                std::cout << "Trying for " << i << " layers" << std::endl;
+                pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", i, dum, true);
+                ppatch = pcvz->getPatch();
+                if (ppatch.size() > 0) {
+                    break;
+                }
+            }
+            if (ppatch.size() > 0) {
+                // check for intermediate states
+                BF isFB_this = getIntermediateStateFeedback(ppatch);   // Intermediate State Feed Back
+                isFB &= isFB_this;
+                if (isFB_this.isTrue()) {
+                    std::vector<int> empv;
+                    p4Plan.makePatch(ppatch, goalID, tIni, tFnl);
+                    std::cout << "patch Found" << std::endl;
+                    // p4Plan.printTransitions();
+                    patchFound = true;
+                    break;
+                }
+            } else {
+                checkReach = false;
+                break;
+            }
+        }
+        */
+        auto ppatch = patchForGivenHorizon(iniStateAs, fnlStateAs, (tFnl - tIni + 1));
+        if (ppatch.size() > 0) {
+            p4Plan.makePatch(ppatch, goalID, tIni, tFnl);
+            patchFound = true;
+            break;
+        }
+        // if not reachable or the cp failed, increase the patch horizon
+        std::cout << "=========<Patching Iteration: Expand the Patch Horizon>==========" << std::endl;
+        int ntIni = std::max(0, tIni - 1);
+        int ntFnl = std::min((int) tMax, tFnl + 1);
+        if ((ntIni == tIni) && (ntFnl == tFnl)) {
+            break;
+        } else {
+            tIni = ntIni;
+            tFnl = ntFnl;
+        }
+    }
+
+    return patchFound;
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+void
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrategy(std::string filename) {
+
+    // We don't want any reordering from this point onwards, as
+    // the BDD manipulations from this point onwards are 'kind of simple'.
+    mgr.setAutomaticOptimisation(false);
+
+    // before synthesis, check the layer
+    // updateL2G();
+
     // safetySys2IntState();
     std::cout << "=========<Generate an original plan by CP>==========" << std::endl;
-    computeExplicitStrategy(positionalStrategiesForTheIndividualGoals);
+    computeExplicitStrategy();
     std::vector<std::vector<int>> dum;
     // updateL2G();
 
     while (true) {
         std::cout << "=========<Start building the patch>==========" << std::endl;
 
+        // std::string inp;
+        // std::cout << "Type something..." << std::endl;
+        // std::cin >> inp;
+        // std::cout << inp << std::endl;
+
+        // input for specify modification
+        std::string typeM, modMaxStr, gidStr, tidStr, asnStr;
+        rmvEdgeFrom = rmvEdgeTo = modReg = "";
+        reasgnRegionState.clear();
+        std::cout << "Please specify the modification type: {DEC/RMV/RAL}" << std::endl;
+        std::cin >> typeM;
+        if (typeM == "DEC") {
+            std::cout << "The region name?" << std::endl;
+            std::cin >> modReg;
+            std::cout << "And the new capacity?" << std::endl;
+            std::cin >> modMaxStr;
+            modMax = stoi(modMaxStr);
+        } else if (typeM == "RMV") {
+            std::cout << "Remove the edge.  From which region?" << std::endl;
+            std::cin >> rmvEdgeFrom;
+            std::cout << "To which region?" << std::endl;
+            std::cin >> rmvEdgeTo;
+        } else if (typeM == "RAL") {
+            std::cout << "Please specify the transition ID: " << std::endl;
+            std::cin >> tidStr;
+            std::cout << "and the goal ID: " << std::endl;
+            std::cin >> gidStr;
+            reasgnStateNum = stoi(tidStr);
+            reasgnGoalNum = stoi(gidStr);
+            std::cout << "and the expected number assignment on each region: " << std::endl;
+            for (int i = 0; i < pcvz->getRegionNum(); i++) {
+                std::cout << pcvz->getRegionName(i) << ": " << std::endl;
+                std::cin >> asnStr;
+                reasgnRegionState.push_back(stoi(asnStr));
+            }
+        } else {
+            std::cout << "Strange Modification Type " << typeM << std::endl;
+        }
+
         // check for reassignment
         reallocation();
+        updateRAS();
 
         std::cout << "=========<Do an initial guess on Patch Horizon>==========" << std::endl;
         // If there is any removal of an edge
@@ -908,13 +1194,26 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
                 p4Plan.updateEdge(true, rmvEdgeID);
             } else {
                 directed = true;
-                int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
+                int rmvEdgeID1 = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
                 pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
-                p4Plan.updateEdge(true, rmvEdgeID);
-                rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeTo, rmvEdgeFrom);
+                p4Plan.updateEdge(true, rmvEdgeID1);
+                int rmvEdgeID2 = pcvz->getEdgeIDByName(rmvEdgeTo, rmvEdgeFrom);
                 pcvz->addEdgeByName(directed, true, rmvEdgeTo, rmvEdgeFrom);
-                p4Plan.updateEdge(true, rmvEdgeID);
+                p4Plan.updateEdge(true, rmvEdgeID2);
+                // p4Plan.cleanEidRmv();
+                // p4Plan.specifyEidRmv(rmvEdgeID1);
+                // p4Plan.specifyEidRmv(rmvEdgeID2);
             }
+            // update the max region capaciy
+            auto newEdgeMax = pcvz->getEdgeMax();
+            std::vector<int> edgeIDs;
+            for (int i = 0; i < newEdgeMax.size(); i++) {
+                std::cout << newEdgeMax[i] << " ";
+                edgeIDs.push_back(i);
+            }
+            std::cout << std::endl;
+            p4Plan.updateCapacity(edgeIDs, newEdgeMax);
+            p4Plan.printTransitions();
         }
         // If the modification of regional robot capacity is required
         std::vector<int> originalEdgeMax, newEdgeMax;
@@ -932,13 +1231,12 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             std::cout << std::endl;
             p4Plan.updateCapacity(edgeIDs, newEdgeMax);
         }
+
         std::vector<std::pair<int, int>> locP = p4Plan.localizePatch();
 
         // do the patch
         bool patchFound = true;
         for (int i = 0; i <= livenessGuarantees.size(); i++) {
-            std::cout << "A" << std::endl;
-            std::cout << i << std::endl;
             int goalID = i - 1;
             patchFound &= patchForGoal(goalID, locP);
         }
@@ -948,16 +1246,17 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             std::cout << "Patch Failed" << std::endl;
         } else {
             // print as dot
-            pcvz->printPatch2Dot("ReAssigned", p4Plan.getAllTransitions());
+            pcvz->printPatch2Dot("Patched", p4Plan.getAllTransitions());
         }
     }
 
     // TODO Lists:
-    // 1. Integrate Ji's and Salar's Plan Synthesizer
-    // 2. Make current codes be able to run plan with many goals
-    // 3. Integrate Salar's Intermediate State Checker
+    // 1. Integrate Ji's and Salar's Plan Synthesizer (\/)
+    // 2. Make current codes be able to run plan with many goals (\/)
+    // 3. Integrate Salar's Intermediate State Checker (\/)
+    // 3-1. Patching prefix after reallocation causes problems because the patch is difficult to include both the re-allocation and new prefixes
     // 4. DO the patch when the modification affects the goal states
-    // 5. Interactive interface
+    // 5. Interactive interface (\/)
     // 6. Difference of the BB in CP solvers and doing "feedback and conflict solving" on GR(1)?
 }
 

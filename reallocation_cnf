@@ -8,10 +8,10 @@ c # Warning: CNF IDs missing ... equal to BDD IDs.
 c #
 c .ver DDDMP-2.0
 c .nnodes 57
-c .nvars 21
+c .nvars 27
 c .nsuppvars 18
 c .suppvarnames K K' L L' M M' N N' O O' P P' Q Q' R R' S S'
-c .orderedvarnames K K' L L' M M' N N' O O' P P' Q Q' R R' S S' _jx_b0 _jx_b1 strat_type
+c .orderedvarnames K K' L L' M M' N N' O O' P P' Q Q' R R' S S' _jx_b0 _jx_b1 strat_type _jx_b2 _jx_b3 strat_type _jx_b4 _jx_b5 strat_type
 c .ids  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 c .permids  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 c .auxids  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17

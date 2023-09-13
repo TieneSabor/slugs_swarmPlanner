@@ -45,46 +45,68 @@ K4 [label="K: 0"];
 L4 [label="L: 0"];
 M4 [label="M: 0"];
 N4 [label="N: 0"];
-O4 [label="O: 9"];
-P4 [label="P: 0"];
+O4 [label="O: 0"];
+P4 [label="P: 9"];
 Q4 [label="Q: 0"];
 R4 [label="R: 1"];
 S4 [label="S: 0"];
-rank = same {K4 -> L4 -> M4 -> N4 -> O4 -> P4 -> Q4 -> R4 -> S4 [style=invis] }P3 -> O4
+rank = same {K4 -> L4 -> M4 -> N4 -> O4 -> P4 -> Q4 -> R4 -> S4 [style=invis] }P3 -> P4
 S3 -> R4
-K5 [label="K: 9"];
+K5 [label="K: 0"];
 L5 [label="L: 0"];
 M5 [label="M: 1"];
 N5 [label="N: 0"];
-O5 [label="O: 0"];
+O5 [label="O: 9"];
 P5 [label="P: 0"];
 Q5 [label="Q: 0"];
 R5 [label="R: 0"];
 S5 [label="S: 0"];
-rank = same {K5 -> L5 -> M5 -> N5 -> O5 -> P5 -> Q5 -> R5 -> S5 [style=invis] }O4 -> K5
+rank = same {K5 -> L5 -> M5 -> N5 -> O5 -> P5 -> Q5 -> R5 -> S5 [style=invis] }P4 -> O5
 R4 -> M5
-K6 [label="K: 0"];
+K6 [label="K: 10"];
 L6 [label="L: 0"];
 M6 [label="M: 0"];
 N6 [label="N: 0"];
-O6 [label="O: 9"];
+O6 [label="O: 0"];
 P6 [label="P: 0"];
 Q6 [label="Q: 0"];
-R6 [label="R: 1"];
+R6 [label="R: 0"];
 S6 [label="S: 0"];
-rank = same {K6 -> L6 -> M6 -> N6 -> O6 -> P6 -> Q6 -> R6 -> S6 [style=invis] }K5 -> O6
-M5 -> R6
+rank = same {K6 -> L6 -> M6 -> N6 -> O6 -> P6 -> Q6 -> R6 -> S6 [style=invis] }M5 -> K6
+O5 -> K6
 K7 [label="K: 0"];
 L7 [label="L: 0"];
-M7 [label="M: 0"];
+M7 [label="M: 1"];
 N7 [label="N: 0"];
-O7 [label="O: 0"];
-P7 [label="P: 9"];
+O7 [label="O: 9"];
+P7 [label="P: 0"];
 Q7 [label="Q: 0"];
 R7 [label="R: 0"];
-S7 [label="S: 1"];
-rank = same {K7 -> L7 -> M7 -> N7 -> O7 -> P7 -> Q7 -> R7 -> S7 [style=invis] }O6 -> P7
-R6 -> S7
-K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 [ style=invis; weight=1000 ]
-S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> S7 [ style=invis; weight=1000 ]
+S7 [label="S: 0"];
+rank = same {K7 -> L7 -> M7 -> N7 -> O7 -> P7 -> Q7 -> R7 -> S7 [style=invis] }K6 -> M7
+K6 -> O7
+K8 [label="K: 0"];
+L8 [label="L: 0"];
+M8 [label="M: 0"];
+N8 [label="N: 0"];
+O8 [label="O: 0"];
+P8 [label="P: 9"];
+Q8 [label="Q: 0"];
+R8 [label="R: 1"];
+S8 [label="S: 0"];
+rank = same {K8 -> L8 -> M8 -> N8 -> O8 -> P8 -> Q8 -> R8 -> S8 [style=invis] }M7 -> R8
+O7 -> P8
+K9 [label="K: 0"];
+L9 [label="L: 0"];
+M9 [label="M: 0"];
+N9 [label="N: 0"];
+O9 [label="O: 0"];
+P9 [label="P: 9"];
+Q9 [label="Q: 0"];
+R9 [label="R: 0"];
+S9 [label="S: 1"];
+rank = same {K9 -> L9 -> M9 -> N9 -> O9 -> P9 -> Q9 -> R9 -> S9 [style=invis] }P8 -> P9
+R8 -> S9
+K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 -> K8 -> K9 [ style=invis; weight=1000 ]
+S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> S7 -> S8 -> S9 [ style=invis; weight=1000 ]
 }

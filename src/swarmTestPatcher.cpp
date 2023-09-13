@@ -28,6 +28,7 @@ patcher::clean() {
     for (int i = 0; i < _tranSuffix.size(); i++) {
         _tranSuffix[i].trans.clear();
     }
+    _tranSuffix.clear();
 }
 
 void
@@ -50,6 +51,8 @@ patcher::validState(std::vector<int> state) {
             std::cout << "Wrong Edge ID: " << _edgeIDs[i] << std::endl;
             return false;
         } else if (state[_edgeIDs[i]] > _edgeMax[i]) {
+            return false;
+        } else if (intInVec(i, _eidToBeRemoved) && (state[_edgeIDs[i]] > 0)) {
             return false;
         } else if (sumOverVec(state) != _robotNum) {
             std::cout << "State Sum: " << sumOverVec(state) << ", robot num: " << _robotNum << std::endl;

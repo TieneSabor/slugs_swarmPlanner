@@ -1,0 +1,90 @@
+digraph {
+K0 [label="K: 10"];
+L0 [label="L: 0"];
+M0 [label="M: 0"];
+N0 [label="N: 0"];
+O0 [label="O: 0"];
+P0 [label="P: 0"];
+Q0 [label="Q: 0"];
+R0 [label="R: 0"];
+S0 [label="S: 0"];
+rank = same {K0 -> L0 -> M0 -> N0 -> O0 -> P0 -> Q0 -> R0 -> S0 [style=invis] }K1 [label="K: 0"];
+L1 [label="L: 0"];
+M1 [label="M: 1"];
+N1 [label="N: 0"];
+O1 [label="O: 9"];
+P1 [label="P: 0"];
+Q1 [label="Q: 0"];
+R1 [label="R: 0"];
+S1 [label="S: 0"];
+rank = same {K1 -> L1 -> M1 -> N1 -> O1 -> P1 -> Q1 -> R1 -> S1 [style=invis] }K0 -> M1
+K0 -> O1
+K2 [label="K: 0"];
+L2 [label="L: 0"];
+M2 [label="M: 0"];
+N2 [label="N: 0"];
+O2 [label="O: 0"];
+P2 [label="P: 9"];
+Q2 [label="Q: 0"];
+R2 [label="R: 1"];
+S2 [label="S: 0"];
+rank = same {K2 -> L2 -> M2 -> N2 -> O2 -> P2 -> Q2 -> R2 -> S2 [style=invis] }M1 -> R2
+O1 -> P2
+K3 [label="K: 0"];
+L3 [label="L: 0"];
+M3 [label="M: 0"];
+N3 [label="N: 0"];
+O3 [label="O: 0"];
+P3 [label="P: 9"];
+Q3 [label="Q: 0"];
+R3 [label="R: 0"];
+S3 [label="S: 1"];
+rank = same {K3 -> L3 -> M3 -> N3 -> O3 -> P3 -> Q3 -> R3 -> S3 [style=invis] }P2 -> P3
+R2 -> S3
+K4 [label="K: 0"];
+L4 [label="L: 0"];
+M4 [label="M: 0"];
+N4 [label="N: 0"];
+O4 [label="O: 9"];
+P4 [label="P: 0"];
+Q4 [label="Q: 0"];
+R4 [label="R: 1"];
+S4 [label="S: 0"];
+rank = same {K4 -> L4 -> M4 -> N4 -> O4 -> P4 -> Q4 -> R4 -> S4 [style=invis] }P3 -> O4
+S3 -> R4
+K5 [label="K: 9"];
+L5 [label="L: 0"];
+M5 [label="M: 1"];
+N5 [label="N: 0"];
+O5 [label="O: 0"];
+P5 [label="P: 0"];
+Q5 [label="Q: 0"];
+R5 [label="R: 0"];
+S5 [label="S: 0"];
+rank = same {K5 -> L5 -> M5 -> N5 -> O5 -> P5 -> Q5 -> R5 -> S5 [style=invis] }O4 -> K5
+R4 -> M5
+K6 [label="K: 0"];
+L6 [label="L: 0"];
+M6 [label="M: 0"];
+N6 [label="N: 0"];
+O6 [label="O: 9"];
+P6 [label="P: 0"];
+Q6 [label="Q: 0"];
+R6 [label="R: 1"];
+S6 [label="S: 0"];
+rank = same {K6 -> L6 -> M6 -> N6 -> O6 -> P6 -> Q6 -> R6 -> S6 [style=invis] }K5 -> O6
+M5 -> R6
+K7 [label="K: 0"];
+L7 [label="L: 0"];
+M7 [label="M: 0"];
+N7 [label="N: 0"];
+O7 [label="O: 0"];
+P7 [label="P: 9"];
+Q7 [label="Q: 0"];
+R7 [label="R: 0"];
+S7 [label="S: 1"];
+rank = same {K7 -> L7 -> M7 -> N7 -> O7 -> P7 -> Q7 -> R7 -> S7 [style=invis] }O6 -> P7
+R6 -> S7
+K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 [ style=invis; weight=1000 ]
+S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> S7 [ style=invis; weight=1000 ]
+}

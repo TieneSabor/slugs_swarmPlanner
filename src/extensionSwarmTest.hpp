@@ -28,6 +28,8 @@ class XSwarmTest : public T {
     int reasgnStateNum, reasgnGoalNum;
     // explicit strategy
     std::vector<std::vector<int>> explicitStrategy;
+    // region state assignment
+    std::vector<std::vector<std::vector<int>>> rAs;
 
     // Inherited stuff used
     using T::addVariable;
@@ -65,6 +67,8 @@ class XSwarmTest : public T {
 
     void init(std::list<std::string> &filenames);
 
+    BF getVarFromCVZID(bool Pre, int cvzID);
+
     BF regAsn2BF(std::vector<int> rA);
 
     // get the region map safety guarantee in BF
@@ -89,11 +93,19 @@ class XSwarmTest : public T {
 
     void testingBF();
 
-    void computeExplicitStrategy(std::vector<BF> positionalStrategiesForTheIndividualGoals);
+    std::vector<BF> computeSymbolicStrategy();
+
+    void computeExplicitStrategy();
 
     void reallocation();
 
     bool patchForGoal(int goalID, std::vector<std::pair<int, int>> locP);
+
+    void updateRAS();
+
+    BF getIntermediateStateFeedback(std::vector<std::vector<int>> transition);
+
+    std::vector<std::vector<int>> patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb);
 
   public:
     void execute() {

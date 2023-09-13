@@ -170,7 +170,7 @@ convert2MiniZinc::regionFromToByEdgeIndex(int eid) {
     if (eid < _edgeFromTo.size()) {
         return _edgeFromTo[eid];
     } else {
-        std::cout << "Queue for wrong edge ID.  Return meaningless data" << std::endl;
+        std::cout << "Queue for wrong edge ID " << eid << ".  Return meaningless data" << std::endl;
         return std::make_pair(-1, -1);
     }
 }
@@ -295,14 +295,21 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
                 break;
             }
             std::stringstream ss(line);
-            std::string step, eN, brac;
-            int sbt, sat, eA;
+            std::string step, brac;
+            int sbt, sat;
             ss >> step >> sbt >> sat >> brac;
             std::vector<int> state;
-            while (!ss.eof()) {
+            // while (!ss.eof()) {
+            // Force the edge array to be initialized
+            regionFromToByEdgeIndex(0);
+            for (int i = 0; i < _edgeFromTo.size(); i++) {
+                std::string eN;
+                int eA;
                 ss >> eN >> eA;
                 state.push_back(eA);
+                // std::cout << eN << " ";
             }
+            // std::cout << std::endl;
             _patch.push_back(state);
         }
         // print to debug
@@ -595,7 +602,7 @@ convert2MiniZinc::miniZincReassign(std::vector<std::vector<int>> assignment, boo
                 if (eas > 0) {
                     os << _regionNames[j] << _regionNames[outEdges[k]] << ": \\(" << rE << ") ";
                 } else {
-                    os << _regionNames[j] << _regionNames[outEdges[k]] << ": 0";
+                    os << _regionNames[j] << _regionNames[outEdges[k]] << ": 0 ";
                 }
             }
         }
@@ -904,6 +911,16 @@ convert2MiniZinc::testPatchWithEdgeLiterals() {
                 }
                 std::cout << std::endl;
             }
+        }
+    }
+}
+
+void
+convert2MiniZinc::printTransition(std::vector<int> transition) {
+    for (int eid = 0; eid < transition.size(); eid++) {
+        std::pair<int, int> ep = regionFromToByEdgeIndex(eid);
+        if (transition[eid] > 0) {
+            std::cout << _regionNames[ep.first] << " -> " << _regionNames[ep.second] << std::endl;
         }
     }
 }

@@ -83,6 +83,14 @@ class convert2MiniZinc {
         return _iniNs;
     }
 
+    std::string getRegionName(int rid) {
+        if ((rid >= _regionNames.size()) || (rid < 0)) {
+            std::cout << "Region ID " << rid << " is not existed" << std::endl;
+            return "";
+        }
+        return _regionNames[rid];
+    }
+
     // if the edge does not exist, return -1
     int getEdgeIDByIndex(int fromIndex, int toIndex);
 
@@ -164,6 +172,8 @@ class convert2MiniZinc {
     void printPatch2Dot(std::string fileName, std::vector<std::vector<int>> patch);
 
     // Utilities
+    void printTransition(std::vector<int> transition);
+
     void printClauses() {
         std::cout << "Print Stored Clauses in CNF: " << std::endl;
         int nC = _clauses.size();

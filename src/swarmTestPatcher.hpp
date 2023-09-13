@@ -30,6 +30,14 @@ namespace swarmTest{
             _tranSuffix.push_back(newEmpty);
         }
 
+        void cleanEidRmv() {
+            _eidToBeRemoved.clear();
+        }
+
+        void specifyEidRmv(int eidRmv) {
+            _eidToBeRemoved.push_back(eidRmv);
+        }
+
         // add or remove a certain edge in the existing patch
         // add: add an empty assignment at each transition after the edgeID
         // remove: remove the assignment at each transition at the edgeID
@@ -45,6 +53,26 @@ namespace swarmTest{
             for (int j = 0; j < _tranSuffix.size(); j++) {
                 for (int i = 0; i < _tranSuffix[j].trans.size(); i++) {
                     updateEdgeOnATran(remove, edgeID, _tranSuffix[j].trans[i]);
+                }
+            }
+        }
+
+        void updateEdge(bool remove, std::vector<int> edgeID, int goalID) {
+            if (!_inited) {
+                std::cout << "No any transitions in the patcher yet..." << std::endl;
+            }
+            if (edgeID.size() == 0) {
+                edgeID = _eidToBeRemoved;
+            }
+            // modify the prefix
+            if (goalID == -1) {
+                for (int i = 0; i < _tranPrefix.trans.size(); i++) {
+                    updateEdgeOnATran(remove, edgeID, _tranPrefix.trans[i]);
+                }
+            } else {
+                // modify the suffix
+                for (int i = 0; i < _tranSuffix[goalID].trans.size(); i++) {
+                    updateEdgeOnATran(remove, edgeID, _tranSuffix[goalID].trans[i]);
                 }
             }
         }
@@ -173,6 +201,8 @@ namespace swarmTest{
 
       t2g _tranPrefix;
 
+      std::vector<int> _eidToBeRemoved;
+
       // _tranSuffix[i] means transition path to ith goal
       std::vector<t2g> _tranSuffix;
 
@@ -192,6 +222,20 @@ namespace swarmTest{
           }
       }
 
+      void updateEdgeOnATran(bool remove, std::vector<int> edgeID, std::vector<int> &tran) {
+          if (remove) {
+              std::vector<int> oldTran = tran;
+              tran.clear();
+              for (int i = 0; i < oldTran.size(); i++) {
+                  if (!intInVec(i, edgeID)) {
+                      tran.push_back(oldTran[i]);
+                  }
+              }
+          } else {
+              std::cout << "Add a set of edge to a patch is not supported" << std::endl;
+          }
+      }
+
       int
       sumOverVec(std::vector<int> v) {
           int sum = 0;
@@ -199,6 +243,16 @@ namespace swarmTest{
               sum += v[i];
           }
           return sum;
+      }
+
+      bool
+      intInVec(int i, std::vector<int> v) {
+          for (int j = 0; j < v.size(); j++) {
+              if (i == v[j]) {
+                  return true;
+              }
+          }
+          return false;
       }
 
       bool validState(std::vector<int> state);
