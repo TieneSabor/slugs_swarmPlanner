@@ -105,7 +105,7 @@ class XSwarmTest : public T {
 
     BF getIntermediateStateFeedback(std::vector<std::vector<int>> transition);
 
-    std::vector<std::vector<int>> patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb);
+    std::vector<std::vector<int>> patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb, bool final);
 
   public:
     void execute() {

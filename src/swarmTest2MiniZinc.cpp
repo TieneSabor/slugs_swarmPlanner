@@ -729,6 +729,16 @@ convert2MiniZinc::miniZincString(unsigned int layernumber, bool finalBC) {
             std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
             os << mZCtr(rP + " == " + std::to_string(_fnlNs[j]));
         }
+    } else {
+        os << mZCom("Final Conditions");
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
+            if (_fnlNs[j] > 0) {
+                os << mZCtr(rP + " > 0");
+            } else {
+                os << mZCtr(rP + " == 0");
+            }
+        }
     }
     // print "solve" and output
     os << "solve satisfy;" << std::endl;
