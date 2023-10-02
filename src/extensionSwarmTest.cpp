@@ -590,7 +590,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
             curState = curState.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
         }
         // Do the CP for that
-        pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns, false);
+        pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, -1, regAsns, false);
         planPrefix = pcvz->getPatch();
         // check for transitions
         BF isFB = getIntermediateStateFeedback(planPrefix);   // Intermediate State Feed Back
@@ -652,7 +652,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
                 curState_g = curState_g.ExistAbstract(varCubePre).SwapVariables(varVectorPre, varVectorPost);
             }
             // Do the CP for that
-            pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, regAsns_g, g == (livenessGuarantees.size() - 1));
+            pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, -1, regAsns_g, g == (livenessGuarantees.size() - 1));
             planSuffix = pcvz->getPatch();
             // check for intermediate states
             BF isFB = getIntermediateStateFeedback(planSuffix);   // Intermediate State Feed Back
@@ -740,17 +740,17 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                                   rstrategy, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
             pcvz->clearClauses();
             for (int i = 0; i < rclauseN; i++) {
-                pcvz->newClause();
+                pcvz->newClause(firstStrategy);
                 // std::cout << "Clause #" << i << " ";
                 for (int j = 0; j < rvarSize; j++) {
                     // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
                     std::string lit = variableNames[j];
                     switch (rclausesInCNFIndex[i * rvarSize + j]) {
                     case 0:
-                        pcvz->addLiteral2LastClauseByName(lit);
+                        pcvz->addLiteral2LastClauseByName(firstStrategy, lit);
                         break;
                     case 1:
-                        pcvz->addLiteral2LastClauseByName("-" + lit);
+                        pcvz->addLiteral2LastClauseByName(firstStrategy, "-" + lit);
                         break;
                     case 2:
                         break;
@@ -760,7 +760,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                 }
             }
             while (tranNumb <= layerNumb) {
-                pcvz->printMiniZinc(toPatcher, patching, "swarmTestReasgnFork", tranNumb, dum, true);
+                pcvz->printMiniZinc(toPatcher, patching, "swarmTestReasgnFork", tranNumb, -1, dum, true);
                 ppatch = pcvz->getPatch();
                 if (ppatch.size() > 0) {
                     // pcvz->printPatch2Dot("ReAssignment");
@@ -796,7 +796,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                 // pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], plan[plan.size() - 1][i]);
                 pcvz->setRegionConstByIndex(i, -1, reasgnRegionState[i], -1);
             }
-            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignPrefix", -1, oldAsgn, false);
+            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignPrefix", -1, -1, oldAsgn, false);
             prefixPatch = pcvz->getPatch();
             if (prefixPatch.size() == 0) {
                 std::cout << "Update the plan failed after the re-allocation. " << std::endl;
@@ -820,7 +820,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                 // rA_firstGoal is only used when g == reasgnGoalNum
                 pcvz->setRegionConstByIndex(i, -1, rA[i], rA_firstGoal[i]);
             }
-            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignSuffix", -1, oldAsgn, (g == (livenessGuarantees.size() - 1)));
+            pcvz->printMiniZinc(toPatcher, reassignment, "newAssignSuffix", -1, -1, oldAsgn, (g == (livenessGuarantees.size() - 1)));
             auto suffixPatch = pcvz->getPatch();
             if (suffixPatch.size() == 0) {
                 std::cout << "Update the plan failed after the re-allocation. " << std::endl;
@@ -924,15 +924,15 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vec
                                   pstrategy, variables, variableNames, pclausesInCNFIndex, pclauseN, pvarSize);
             pcvz->clearClauses();
             for (int i = 0; i < pclauseN; i++) {
-                pcvz->newClause();
+                pcvz->newClause(firstStrategy);
                 for (int j = 0; j < pvarSize; j++) {
                     std::string lit = variableNames[j];
                     switch (pclausesInCNFIndex[i * pvarSize + j]) {
                     case 0:
-                        pcvz->addLiteral2LastClauseByName(lit);
+                        pcvz->addLiteral2LastClauseByName(firstStrategy, lit);
                         break;
                     case 1:
-                        pcvz->addLiteral2LastClauseByName("-" + lit);
+                        pcvz->addLiteral2LastClauseByName(firstStrategy, "-" + lit);
                         break;
                     case 2:
                         break;
@@ -947,7 +947,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vec
         for (int i = expLayNumb; i <= layerNumb; i++) {
             std::cout << "Trying for " << i << " layers" << std::endl;
             std::vector<std::vector<int>> dum;
-            pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", i, dum, final);
+            pcvz->printMiniZinc(toPatcher, patching, "swarmTestFork", i, -1, dum, final);
             ppatch = pcvz->getPatch();
             if (ppatch.size() > 0) {
                 break;
@@ -1215,6 +1215,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
     // 7. Cases:
     // 7-1. DEC O 6 -> RMV M R: Runs forever
     // 7-2. RMV P O -> DEC P 6: Runs OK
+    // 7-3. RAL 1 -1 (4,6) ->6: Runs OK
     // 8. Patch Expansion
     // 9. Cost Function When Reallocate
 }

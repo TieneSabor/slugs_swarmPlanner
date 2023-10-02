@@ -394,6 +394,9 @@ constraint rP3 == 7;
 constraint rQ3 == 0; 
 constraint rR3 == 0; 
 constraint rS3 == 3; 
-solve satisfy;
+% Declare None Selfloop Sum
+var 0..180: NSLS; 
+constraint NSLS == K1L2 + K1M2 + K1O2 + L1K2 + L1Q2 + M1K2 + M1R2 + N1O2 + N1P2 + N1R2 + O1K2 + O1N2 + O1P2 + P1N2 + P1O2 + P1Q2 + Q1L2 + Q1P2 + Q1S2 + R1M2 + R1N2 + R1S2 + S1Q2 + S1R2 + K2L3 + K2M3 + K2O3 + L2K3 + L2Q3 + M2K3 + M2R3 + N2O3 + N2P3 + N2R3 + O2K3 + O2N3 + O2P3 + P2N3 + P2O3 + P2Q3 + Q2L3 + Q2P3 + Q2S3 + R2M3 + R2N3 + R2S3 + S2Q3 + S2R3 +  0; 
+solve minimize NSLS;
 output ["[step 1 2 ] KK: \(K1K2) KL: \(K1L2) KM: \(K1M2) KO: \(K1O2) LK: \(L1K2) LL: \(L1L2) LQ: \(L1Q2) MK: \(M1K2) MM: \(M1M2) MR: \(M1R2) NN: \(N1N2) NO: \(N1O2) NP: \(N1P2) NR: \(N1R2) OK: \(O1K2) ON: \(O1N2) OO: \(O1O2) OP: \(O1P2) PN: \(P1N2) PO: \(P1O2) PP: \(P1P2) PQ: \(P1Q2) QL: \(Q1L2) QP: \(Q1P2) QQ: \(Q1Q2) QS: \(Q1S2) RM: \(R1M2) RN: \(R1N2) RR: \(R1R2) RS: \(R1S2) SQ: \(S1Q2) SR: \(S1R2) SS: \(S1S2) \n"]; 
 output ["[step 2 3 ] KK: \(K2K3) KL: \(K2L3) KM: \(K2M3) KO: \(K2O3) LK: \(L2K3) LL: \(L2L3) LQ: \(L2Q3) MK: \(M2K3) MM: \(M2M3) MR: \(M2R3) NN: \(N2N3) NO: \(N2O3) NP: \(N2P3) NR: \(N2R3) OK: \(O2K3) ON: \(O2N3) OO: \(O2O3) OP: \(O2P3) PN: \(P2N3) PO: \(P2O3) PP: \(P2P3) PQ: \(P2Q3) QL: \(Q2L3) QP: \(Q2P3) QQ: \(Q2Q3) QS: \(Q2S3) RM: \(R2M3) RN: \(R2N3) RR: \(R2R3) RS: \(R2S3) SQ: \(S2Q3) SR: \(S2R3) SS: \(S2S3) \n"]; 

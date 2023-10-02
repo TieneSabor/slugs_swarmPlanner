@@ -11,15 +11,15 @@ S0 [label="S: 1"];
 rank = same {K0 -> L0 -> M0 -> N0 -> O0 -> P0 -> Q0 -> R0 -> S0 [style=invis] }K1 [label="K: 0"];
 L1 [label="L: 0"];
 M1 [label="M: 0"];
-N1 [label="N: 7"];
+N1 [label="N: 0"];
 O1 [label="O: 0"];
-P1 [label="P: 0"];
-Q1 [label="Q: 3"];
+P1 [label="P: 7"];
+Q1 [label="Q: 2"];
 R1 [label="R: 0"];
-S1 [label="S: 0"];
-rank = same {K1 -> L1 -> M1 -> N1 -> O1 -> P1 -> Q1 -> R1 -> S1 [style=invis] }P0 -> N1
+S1 [label="S: 1"];
+rank = same {K1 -> L1 -> M1 -> N1 -> O1 -> P1 -> Q1 -> R1 -> S1 [style=invis] }P0 -> P1
 P0 -> Q1
-S0 -> Q1
+S0 -> S1
 K2 [label="K: 0"];
 L2 [label="L: 0"];
 M2 [label="M: 0"];
@@ -29,8 +29,9 @@ P2 [label="P: 7"];
 Q2 [label="Q: 0"];
 R2 [label="R: 0"];
 S2 [label="S: 3"];
-rank = same {K2 -> L2 -> M2 -> N2 -> O2 -> P2 -> Q2 -> R2 -> S2 [style=invis] }N1 -> P2
+rank = same {K2 -> L2 -> M2 -> N2 -> O2 -> P2 -> Q2 -> R2 -> S2 [style=invis] }P1 -> P2
 Q1 -> S2
+S1 -> S2
 K3 [label="K: 0"];
 L3 [label="L: 0"];
 M3 [label="M: 0"];

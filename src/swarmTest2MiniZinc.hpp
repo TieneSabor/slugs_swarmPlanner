@@ -56,7 +56,14 @@ enum printDest {
 enum printFor {
     patching,
     reassignment,
-    planassignment
+    planassignment,
+    doublestrategy
+};
+
+enum whichClause {
+    firstStrategy,
+    secondStrategy,
+    goalState
 };
 
 struct clause {
@@ -124,7 +131,7 @@ class convert2MiniZinc {
     // "A" : region A_i > 0
     // "-A": region A_i == 0
     // "A'": region A_(i+1) > 0
-    void addLiteral2LastClauseByName(std::string name) {
+    void addLiteral2LastClauseByName(whichClause specifyClause, std::string name) {
         bool com = false;
         bool bef = true;
         if (name[0] == '-') {
@@ -136,14 +143,28 @@ class convert2MiniZinc {
             name = name.substr(0, name.size() - 1);
         }
         int idL = _regionIDsByName[name];
-        addLiteral2LastClauseByIndex(com, bef, idL);
+        addLiteral2LastClauseByIndex(com, bef, specifyClause, idL);
     }
 
     // complemented == true -> complemented literal
     // befAft == true       -> before predicate; else, after predicate
     // idL: index of the literal
-    void addLiteral2LastClauseByIndex(bool complemented, bool before, int idL) {
-        addLiteral2CertainClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+    void addLiteral2LastClauseByIndex(bool complemented, bool before, whichClause specifyClause, int idL) {
+        switch (specifyClause) {
+        case (firstStrategy):
+            addLiteral2CertainClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+            break;
+        case (secondStrategy):
+            addLiteral2CertainSecondClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+            break;
+        case (goalState):
+            addLiteral2CertainGoalStateClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+            break;
+
+        default:
+            std::cout << "Specify the wrong clause type... : " << specifyClause << std::endl;
+            break;
+        }
     }
 
     void addLiteral2CertainClauseByIndex(bool complemented, bool before, int idL, int idC) {
@@ -156,16 +177,52 @@ class convert2MiniZinc {
         }
     }
 
-    void newClause() {
+    void addLiteral2CertainSecondClauseByIndex(bool complemented, bool before, int idL, int idC) {
+        if (before) {
+            _secondClauses[idC].beforeComplemented.push_back(complemented);
+            _secondClauses[idC].beforeRegionIndex.push_back(idL);
+        } else {
+            _secondClauses[idC].afterComplemented.push_back(complemented);
+            _secondClauses[idC].afterRegionIndex.push_back(idL);
+        }
+    }
+
+    void addLiteral2CertainGoalStateClauseByIndex(bool complemented, bool before, int idL, int idC) {
+        if (before) {
+            _goalStateClauses[idC].beforeComplemented.push_back(complemented);
+            _goalStateClauses[idC].beforeRegionIndex.push_back(idL);
+        } else {
+            _goalStateClauses[idC].afterComplemented.push_back(complemented);
+            _goalStateClauses[idC].afterRegionIndex.push_back(idL);
+        }
+    }
+
+    void newClause(whichClause specifyClause) {
         struct clause c;
-        _clauses.push_back(c);
+        switch (specifyClause) {
+        case (firstStrategy):
+            _clauses.push_back(c);
+            break;
+        case (secondStrategy):
+            _secondClauses.push_back(c);
+            break;
+        case (goalState):
+            _goalStateClauses.push_back(c);
+            break;
+
+        default:
+            std::cout << "Specify the wrong clause type... : " << specifyClause << std::endl;
+            break;
+        }
     }
 
     void clearClauses() {
         _clauses.clear();
+        _secondClauses.clear();
+        _goalStateClauses.clear();
     }
 
-    void printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int layerNumber, std::vector<std::vector<int>> assignment, bool finalBC);
+    void printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int firstLayerNumber, unsigned int secondLayerNumber, std::vector<std::vector<int>> assignment, bool finalBC);
 
     void printPatch2Dot(std::string fileName);
 
@@ -255,7 +312,7 @@ class convert2MiniZinc {
 
     regionMap _rM;
 
-    std::vector<struct clause> _clauses;
+    std::vector<struct clause> _clauses, _secondClauses, _goalStateClauses;
 
     std::vector<std::vector<std::pair<int, bool>>> _edgeLiterals;
 
@@ -268,6 +325,9 @@ class convert2MiniZinc {
     std::string miniZincAssign(std::vector<std::vector<int>> assignment, bool finalBC);
 
     std::string miniZincReassign(std::vector<std::vector<int>> assignment, bool finalBC);
+
+    std::string
+    miniZincDoubleStrategy(unsigned int layernumber, unsigned int secondLayerNumber, bool finalBC);
 
     // for working with the patcher
     std::vector<std::vector<int>> _patch;

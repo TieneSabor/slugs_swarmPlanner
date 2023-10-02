@@ -176,13 +176,13 @@ convert2MiniZinc::regionFromToByEdgeIndex(int eid) {
 }
 
 void
-convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int layerNumber, std::vector<std::vector<int>> assignment, bool finalBC) {
+convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fileName, unsigned int firstLayerNumber, unsigned int secondLayerNumber, std::vector<std::vector<int>> assignment, bool finalBC) {
     std::string miniZinc;
     switch (reason) {
     case (patching):
-        if (layerNumber == 0)
+        if (firstLayerNumber == 0)
             return;
-        miniZinc = miniZincString(layerNumber, finalBC);
+        miniZinc = miniZincString(firstLayerNumber, finalBC);
         break;
 
     case (reassignment):
@@ -194,6 +194,12 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
             // will be a problem when the assignment has no transitions
             return;
         miniZinc = miniZincAssign(assignment, finalBC);
+        break;
+
+    case (doublestrategy):
+        if ((firstLayerNumber == 0) || (secondLayerNumber == 0))
+            return;
+        miniZinc = miniZincDoubleStrategy(firstLayerNumber, secondLayerNumber, finalBC);
         break;
 
     default:
@@ -613,6 +619,170 @@ convert2MiniZinc::miniZincReassign(std::vector<std::vector<int>> assignment, boo
 }
 
 std::string
+convert2MiniZinc::miniZincDoubleStrategy(unsigned int firstLayerNumber, unsigned int secondLayerNumber, bool finalBC) {
+    std::ostringstream os;
+    unsigned int layernumber = firstLayerNumber + secondLayerNumber;
+    // print region variables
+    os << mZCom("Declare Regional Variables");
+    int nR = _regionIDsByName.size();
+    for (int i = 0; i <= layernumber; i++) {
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(i + 1);
+            os << mZVar(rP, 0, _maxNs[j]);
+        }
+    }
+    // print edge variables
+    os << mZCom("Declare Edge Variables");
+    for (int i = 0; i < layernumber; i++) {
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                os << mZVar(rE, 0, std::min(_maxNs[j], _maxNs[outEdges[k]]));
+            }
+        }
+    }
+    // print clauses
+    os << mZCom("Strategy Constraints");
+    for (int i = 0; i < layernumber; i++) {
+        // check if this is the first or second part of the patch
+        int nC;
+        if (i <= firstLayerNumber) {
+            nC = _clauses.size();
+        } else {
+            nC = _secondClauses.size();
+        }
+        for (int j = 0; j < nC; j++) {
+            struct clause clausej;
+            if (i <= firstLayerNumber) {
+                clausej = _clauses[j];
+            } else {
+                clausej = _secondClauses[j];
+            }
+            int jB = clausej.beforeRegionIndex.size();
+            std::string cj;
+            for (int k = 0; k < jB; k++) {
+                int iR = clausej.beforeRegionIndex[k];
+                bool cm = clausej.beforeComplemented[k];
+                std::string rP = "r" + _regionNames[iR] + std::to_string(i + 1);
+                std::string li = mznLiteral(!cm, rP);
+                cj += li + " \\/ ";
+            }
+            int jA = clausej.afterRegionIndex.size();
+            for (int k = 0; k < jA; k++) {
+                int iR = clausej.afterRegionIndex[k];
+                bool cm = clausej.afterComplemented[k];
+                std::string rP = "r" + _regionNames[iR] + std::to_string(i + 2);
+                std::string li = mznLiteral(!cm, rP);
+                cj += li + " \\/ ";
+            }
+            cj = cj.substr(0, cj.size() - 3);   // take away the last "\/ "
+            os << mZCtr(cj);
+        }
+    }
+    // print the goal state specification
+    os << mZCom("GoalState Constraints");
+    int nGSC = _goalStateClauses.size();
+    for (int j = 0; j < nGSC; j++) {
+        struct clause clausej = _goalStateClauses[j];
+        int jB = clausej.beforeRegionIndex.size();
+        std::string cj;
+        for (int k = 0; k < jB; k++) {
+            int iR = clausej.beforeRegionIndex[k];
+            bool cm = clausej.beforeComplemented[k];
+            std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 1);
+            std::string li = mznLiteral(!cm, rP);
+            cj += li + " \\/ ";
+        }
+        // this section should do nothing
+        // int jA = clausej.afterRegionIndex.size();
+        // for (int k = 0; k < jA; k++) {
+        //     int iR = clausej.afterRegionIndex[k];
+        //     bool cm = clausej.afterComplemented[k];
+        //     std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 2);
+        //     std::string li = mznLiteral(!cm, rP);
+        //     cj += li + " \\/ ";
+        // }
+        cj = cj.substr(0, cj.size() - 3);   // take away the last "\/ "
+        os << mZCtr(cj);
+    }
+    // print conservation law: inlet sum equals after region value, and outlet sum equals before region value
+    os << mZCom("Conservation Constraint: Inlets");
+    for (int i = 0; i < layernumber; i++) {
+        for (int j = 0; j < nR; j++) {
+            std::string sj;
+            auto inEdges = _rM.getInRegion(j);
+            for (int k = 0; k < inEdges.size(); k++) {
+                std::string rE = _regionNames[inEdges[k]] + std::to_string(i + 1) + _regionNames[j] + std::to_string(i + 2);
+                sj += (rE + " + ");
+            }
+            // check if the inlet regions exist
+            if (sj.size() > 2) {
+                sj = sj.substr(0, sj.size() - 2);   // take away the last "+ "
+                std::string rP = "r" + _regionNames[j] + std::to_string(i + 2);
+                os << mZCtr(sj + "== " + rP);
+            }
+        }
+    }
+    os << mZCom("Conservation Constraint: Outlets");
+    for (int i = 0; i < layernumber; i++) {
+        for (int j = 0; j < nR; j++) {
+            std::string sj;
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                sj += (rE + " + ");
+            }
+            // check if the outlet regions exist
+            if (sj.size() > 2) {
+                sj = sj.substr(0, sj.size() - 2);   // take away the last "+ "
+                std::string rP = "r" + _regionNames[j] + std::to_string(i + 1);
+                os << mZCtr(sj + "== " + rP);
+            }
+        }
+    }
+    // print initial and final condition
+    os << mZCom("Initial Conditions");
+    for (int j = 0; j < nR; j++) {
+        std::string rP = "r" + _regionNames[j] + "1";
+        os << mZCtr(rP + " == " + std::to_string(_iniNs[j]));
+    }
+    if (finalBC) {
+        os << mZCom("Final Conditions");
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
+            os << mZCtr(rP + " == " + std::to_string(_fnlNs[j]));
+        }
+    } else {
+        os << mZCom("Final Conditions");
+        for (int j = 0; j < nR; j++) {
+            std::string rP = "r" + _regionNames[j] + std::to_string(layernumber + 1);
+            if (_fnlNs[j] > 0) {
+                os << mZCtr(rP + " > 0");
+            } else {
+                os << mZCtr(rP + " == 0");
+            }
+        }
+    }
+    // print "solve" and output
+    os << "solve satisfy;" << std::endl;
+    // os << "solve minimize NSLS;" << std::endl;
+    for (int i = 0; i < layernumber; i++) {
+        os << "output [\"[step " << i + 1 << " " << i + 2 << " ] ";
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                os << _regionNames[j] << _regionNames[outEdges[k]] << ": \\(" << rE << ") ";
+            }
+        }
+        os << "\\n\"]; " << std::endl;
+    }
+    // return
+    return os.str();
+}
+
+std::string
 convert2MiniZinc::miniZincString(unsigned int layernumber, bool finalBC) {
     std::ostringstream os;
     // print region variables
@@ -740,8 +910,29 @@ convert2MiniZinc::miniZincString(unsigned int layernumber, bool finalBC) {
             }
         }
     }
+    // minimize the robot number on the non-self-loop transition
+    os << mZCom("Declare None Selfloop Sum");
+    int maxRobot = 0;
+    for (int i = 0; i < nR; i++) {
+        maxRobot += _maxNs[i];
+    }
+    os << mZVar("NSLS", 0, layernumber * maxRobot);
+    std::string sls = "NSLS == ";
+    for (int i = 0; i < layernumber; i++) {
+        for (int j = 0; j < nR; j++) {
+            auto outEdges = _rM.getOutRegion(j);
+            for (int k = 0; k < outEdges.size(); k++) {
+                if (j != outEdges[k]) {
+                    std::string rE = _regionNames[j] + std::to_string(i + 1) + _regionNames[outEdges[k]] + std::to_string(i + 2);
+                    sls += rE + " + ";
+                }
+            }
+        }
+    }
+    os << mZCtr(sls + " 0");
     // print "solve" and output
-    os << "solve satisfy;" << std::endl;
+    // os << "solve satisfy;" << std::endl;
+    os << "solve minimize NSLS;" << std::endl;
     for (int i = 0; i < layernumber; i++) {
         os << "output [\"[step " << i + 1 << " " << i + 2 << " ] ";
         for (int j = 0; j < nR; j++) {
