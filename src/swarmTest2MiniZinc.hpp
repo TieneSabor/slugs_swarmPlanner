@@ -155,10 +155,10 @@ class convert2MiniZinc {
             addLiteral2CertainClauseByIndex(complemented, before, idL, _clauses.size() - 1);
             break;
         case (secondStrategy):
-            addLiteral2CertainSecondClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+            addLiteral2CertainSecondClauseByIndex(complemented, before, idL, _secondClauses.size() - 1);
             break;
         case (goalState):
-            addLiteral2CertainGoalStateClauseByIndex(complemented, before, idL, _clauses.size() - 1);
+            addLiteral2CertainGoalStateClauseByIndex(complemented, before, idL, _goalStateClauses.size() - 1);
             break;
 
         default:

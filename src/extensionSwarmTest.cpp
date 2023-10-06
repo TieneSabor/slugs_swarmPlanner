@@ -406,6 +406,92 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetySys2IntState() {
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 BF
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSetRec(BF F, std::vector<std::pair<int, int>> edgePred) {
+    // std::cout << "level: " << edgePred.size() << std::endl;
+    // Boundary Condition: If edgePred is empty, return
+    // if (F.isFalse()) {
+    //     // BF or False = BF
+    //     return mgr.constantFalse();
+    // }
+    if (edgePred.size() == 0) {
+        // BF EAF = F.ExistAbstract(varCubePre);
+        // printStrategyBDD(EAF, "remainBDD" + std::to_string(literals.size()));
+        // if (!EAF.isTrue()) {
+        //     std::cout << "Bad" << std::endl;
+        // } else {
+        //     // literals.push_back(literal);
+        //     std::cout << "?" << std::endl;
+        // }
+        // This will make the clause vanish: BF1 and (BF2 or True) = BF1 and True = BF1
+        // return mgr.constantTrue();
+        if (F.isFalse()) {
+            // BF or False = BF
+            return mgr.constantFalse();
+        } else {
+            // This will make the clause vanish: BF1 and (BF2 or True) = BF1 and True = BF1
+            return mgr.constantTrue();
+        }
+    }
+    // Check if the edgePred.back() existed in the regional map
+    std::pair<int, int> e = edgePred.back();
+    std::vector<std::pair<int, int>> nEP = edgePred;
+    nEP.pop_back();
+    int eid = pcvz->getEdgeIDByIndex(e.first, e.second);
+    BF EF = (variables[e.first * 2] & variables[e.second * 2 + 1]) | (variables[e.first * 2 + 1] & variables[e.second * 2]);
+    // If so, do the Boole Expansion: F = ("Left") (F(e=0) + e)*("Right") (F(e=1) + (!e))
+    if (eid != -1) {
+        std::vector<std::pair<int, bool>> leftLit, rightLit;
+        BF leftF = F;   // (F & (!(variables[e.first * 2] & variables[e.second * 2])));
+        BF rightF = (F & ((variables[e.first * 2] & variables[e.second * 2])));
+        BF leftAns = safetyTransitionSetRec(leftF, nEP);
+        BF rightAns = safetyTransitionSetRec(rightF, nEP);
+        return (leftAns | (EF)) & (rightAns | (!EF));
+    }
+    // If not, pass: F = F(e=0)*(!e)
+    else {
+        BF nextF = F;   // (F & (!(variables[e.first * 2] & variables[e.second * 2])));
+        BF ans = safetyTransitionSetRec(nextF, nEP);
+        return ans;   // & (!EF);
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+BF
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSet() {
+    // create intermediate state predicate variables in BF manager
+    // Not required because for now we only care about CNF
+    // Create a list of edges to process recursively, including those not in region map
+    std::vector<std::pair<int, int>> edges;
+    for (int i = 0; i < pcvz->getRegionNum(); i++) {
+        for (int j = i; j < pcvz->getRegionNum(); j++) {
+            edges.push_back(std::make_pair(i, j));
+        }
+    }
+    // transform safetySysNoRM to CNF in int. state
+    BF tbt = safetySysNoRM;   // to-be-transformed
+    // printStrategyBDD(safetySysNoRM, "safetyNoRMBDD");
+    BF ret = safetyTransitionSetRec(tbt, edges);
+    // verify intermediate state checker
+    // for (int i = 0; i < edges.size(); i++) {
+    //     for (int j = i + 1; j < edges.size(); j++) {
+    //         auto ei = edges[i];
+    //         auto ej = edges[j];
+    //         BF EFi = (variables[ei.first * 2] & variables[ei.second * 2 + 1]) | (variables[ei.first * 2 + 1] & variables[ei.second * 2]);
+    //         BF EFj = (variables[ej.first * 2] & variables[ej.second * 2 + 1]) | (variables[ej.first * 2 + 1] & variables[ej.second * 2]);
+    //         BF check = EFi & EFj & ret;
+    //         int eidi = pcvz->getEdgeIDByIndex(ei.first, ei.second);
+    //         int eidj = pcvz->getEdgeIDByIndex(ej.first, ej.second);
+    //         if ((eidj != -1) && (eidi != -1) && (check.isFalse())) {
+    //             std::cout << "No edge " << variableNames[ei.first * 2] << " - " << variableNames[ei.second * 2] << " and "
+    //                       << variableNames[ej.first * 2] << " - " << variableNames[ej.second * 2] << std::endl;
+    //         }
+    //     }
+    // }
+    return ret;
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+BF
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::getIntermediateStateFeedback(std::vector<std::vector<int>> transitions) {
     BF fb = mgr.constantTrue();
     // iterate for each transitions
@@ -445,6 +531,37 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::getIntermediateStateFeedback(
         }
     }
     return fb;
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+void
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::BF2CVZClauses(BF bf, whichClause wc) {
+    std::string rafilename = "bf_2_cnf";
+    std::string header_ra_cnf = "";
+    // TODO: consider making clause buffer a global thing
+    int rclausesInCNFIndex[1000000], rclauseN = 0, rvarSize = 0;
+    mgr.writeBDDToCNFFile(rafilename.c_str(), header_ra_cnf,
+                          bf, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
+    for (int i = 0; i < rclauseN; i++) {
+        pcvz->newClause(wc);
+        // std::cout << "Clause #" << i << " ";
+        for (int j = 0; j < rvarSize; j++) {
+            // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
+            std::string lit = variableNames[j];
+            switch (rclausesInCNFIndex[i * rvarSize + j]) {
+            case 0:
+                pcvz->addLiteral2LastClauseByName(wc, lit);
+                break;
+            case 1:
+                pcvz->addLiteral2LastClauseByName(wc, "-" + lit);
+                break;
+            case 2:
+                break;
+            default:
+                std::cout << "Unknown literal value: " << rclausesInCNFIndex[i * rvarSize + j] << std::endl;
+            }
+        }
+    }
 }
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
@@ -561,6 +678,9 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
     std::vector<BF> positionalStrategiesForTheIndividualGoals;
     std::vector<std::vector<int>> planPrefix;
     while (true) {
+        // check unsafe set
+        BF unsafeIntermediate = safetyTransitionSet();
+        safetySys &= unsafeIntermediate;
         // Get symbolic strategy first
         T::execute();
         positionalStrategiesForTheIndividualGoals = computeSymbolicStrategy();
@@ -706,10 +826,13 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
 
         // iteratively check for intermediate states
         std::vector<std::vector<int>> ppatch;
-        BF isFB = mgr.constantTrue();
+        BF isFB = safetyTransitionSet();
         while (true) {
             // calculate the fixpoint for the state
             BF raTranRM = getRMSG();
+            if (isFB.isTrue()) {
+                std::cout << "isFB is true" << std::endl;
+            }
             BF rSG = safetySysNoRM & raTranRM & isFB;
             BFFixedPoint rMu1(mgr.constantFalse());
             bool checkReach = false;
@@ -722,8 +845,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
                 BF pathFnd = rSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
                 BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
                 lastLayer |= thisLayer;
-                rstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
-                // rstrategy |= pathFnd;
+                // rstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
+                rstrategy |= pathFnd;
                 rMu1.update(lastLayer);
             }
             std::cout << "Max Re-assignment Patch Layer Number: " << layerNumb << std::endl;
@@ -733,32 +856,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
             for (int i = 0; i < maxNs.size(); i++) {
                 pcvz->setRegionConstByIndex(i, -1, tgtStateAs[i], reasgnRegionState[i]);
             }
-            std::string rafilename = "reallocation_cnf";
-            std::string header_ra_cnf = "";
-            int rclausesInCNFIndex[1000000], rclauseN = 0, rvarSize = 0;
-            mgr.writeBDDToCNFFile(rafilename.c_str(), header_ra_cnf,
-                                  rstrategy, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
             pcvz->clearClauses();
-            for (int i = 0; i < rclauseN; i++) {
-                pcvz->newClause(firstStrategy);
-                // std::cout << "Clause #" << i << " ";
-                for (int j = 0; j < rvarSize; j++) {
-                    // std::cout << clausesInCNFIndex[i * varSize + j] << " ";
-                    std::string lit = variableNames[j];
-                    switch (rclausesInCNFIndex[i * rvarSize + j]) {
-                    case 0:
-                        pcvz->addLiteral2LastClauseByName(firstStrategy, lit);
-                        break;
-                    case 1:
-                        pcvz->addLiteral2LastClauseByName(firstStrategy, "-" + lit);
-                        break;
-                    case 2:
-                        break;
-                    default:
-                        std::cout << "Unknown literal value: " << rclausesInCNFIndex[i * rvarSize + j] << std::endl;
-                    }
-                }
-            }
+            BF2CVZClauses(rstrategy, firstStrategy);
             while (tranNumb <= layerNumb) {
                 pcvz->printMiniZinc(toPatcher, patching, "swarmTestReasgnFork", tranNumb, -1, dum, true);
                 ppatch = pcvz->getPatch();
@@ -776,7 +875,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::reallocation() {
             // check for intermediate states
             BF isFB_this = getIntermediateStateFeedback(ppatch);   // Intermediate State Feed Back
             isFB &= isFB_this;
-            if (isFB.isTrue()) {
+            if (isFB_this.isTrue()) {
                 break;
             }
         }
@@ -877,39 +976,52 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::updateRAS() {
 }
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+std::pair<BF, int>
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::checkReachable(BF start, BF end, BF &isFB) {
+    // transition rules of the region map
+    BF newTranRM = getRMSG();
+    // the overall safety guarantees
+    BF pSG = safetySysNoRM & newTranRM & isFB;
+    // initialize the checker
+    BFFixedPoint pMu1(mgr.constantFalse());
+    bool checkReach = false;
+    BF lastLayer = end;
+    BF pstrategy = mgr.constantFalse();
+    int layerNumb = 0;
+    // fix point operation starts
+    while (true) {
+        if (pMu1.isFixedPointReached()) {
+            break;
+        }
+        layerNumb++;
+        BF pathFnd = pSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
+        BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
+        if (!(thisLayer & start).isFalse()) {
+            checkReach = true;
+        }
+        lastLayer |= thisLayer;
+        // pstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
+        pstrategy |= pathFnd;
+        pMu1.update(lastLayer);
+    }
+    return std::make_pair(pstrategy, layerNumb);
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 std::vector<std::vector<int>>
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb, bool final) {
     BF iniState = regAsn2BF(iniStateAs);
     BF fnlState = regAsn2BF(fnlStateAs);
     // iteratively find a patch that does not violate the intermediate states
-    BF isFB = mgr.constantTrue();
+    BF isFB = safetyTransitionSet();   // mgr.constantTrue();
     std::vector<std::vector<int>> ppatch;
     while (true) {
         // check reachability: one goal, one init and no env. vars...
         std::cout << "=========<Patching Iteration: Check Reachability>==========" << std::endl;
-        BF newTranRM = getRMSG();
-        BF pSG = safetySysNoRM & newTranRM & isFB;
-        BFFixedPoint pMu1(mgr.constantFalse());
-        bool checkReach = false;
-        BF lastLayer = fnlState;
-        BF pstrategy = mgr.constantFalse();
-        int layerNumb = 0;
-        // while (!checkReach) {
-        while (true) {
-            if (pMu1.isFixedPointReached()) {
-                break;
-            }
-            layerNumb++;
-            BF pathFnd = pSG & (lastLayer.SwapVariables(varVectorPre, varVectorPost));
-            BF thisLayer = pathFnd.ExistAbstract(varCubePostOutput);
-            if (!(thisLayer & iniState).isFalse()) {
-                checkReach = true;
-            }
-            lastLayer |= thisLayer;
-            // pstrategy |= pathFnd | (thisLayer & thisLayer.SwapVariables(varVectorPre, varVectorPost));
-            pstrategy |= pathFnd;
-            pMu1.update(lastLayer);
-        }
+        std::pair<BF, int> reachablePair = checkReachable(iniState, fnlState, isFB);
+        BF pstrategy = reachablePair.first;
+        int layerNumb = reachablePair.second;
+        bool checkReach = (layerNumb != 0);
         std::cout << "Patch Layer Number Guess: " << layerNumb << std::endl;
         // if reachable, synthesis the strategy and do the cp
         if (checkReach) {
@@ -917,30 +1029,9 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vec
             for (int i = 0; i < iniStateAs.size(); i++) {
                 pcvz->setRegionConstByIndex(i, -1, iniStateAs[i], fnlStateAs[i]);
             }
-            std::string filename = "patching_cnf";
-            std::string header_cnf = "";
-            int pclausesInCNFIndex[1000000], pclauseN = 0, pvarSize = 0;
-            mgr.writeBDDToCNFFile(filename.c_str(), header_cnf,
-                                  pstrategy, variables, variableNames, pclausesInCNFIndex, pclauseN, pvarSize);
+
             pcvz->clearClauses();
-            for (int i = 0; i < pclauseN; i++) {
-                pcvz->newClause(firstStrategy);
-                for (int j = 0; j < pvarSize; j++) {
-                    std::string lit = variableNames[j];
-                    switch (pclausesInCNFIndex[i * pvarSize + j]) {
-                    case 0:
-                        pcvz->addLiteral2LastClauseByName(firstStrategy, lit);
-                        break;
-                    case 1:
-                        pcvz->addLiteral2LastClauseByName(firstStrategy, "-" + lit);
-                        break;
-                    case 2:
-                        break;
-                    default:
-                        std::cout << "Unknown literal value: " << pclausesInCNFIndex[i * pvarSize + j] << std::endl;
-                    }
-                }
-            }
+            BF2CVZClauses(pstrategy, firstStrategy);
         }
         // increase the layer number until a solution is found
         ppatch.clear();
@@ -969,8 +1060,83 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizon(std::vec
 }
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+std::pair<std::vector<std::vector<int>>, int>
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizonDoubleStrategy(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expFirstLayNumb, int expSecondLayNumb, int goalNumb, bool final) {
+    std::vector<std::vector<int>> ppatch;
+    auto ret = std::make_pair(ppatch, 0);
+    // specify the goal state within the patch
+    BF goal;
+    if ((goalNumb < livenessGuarantees.size()) && (goalNumb >= 0)) {
+        goal = livenessGuarantees[goalNumb];
+    } else {
+        std::cout << "Liveness Guarantee Index Out of Range: " << goalNumb << std::endl;
+        return ret;
+    }
+    // initialize variables
+    BF iniState = regAsn2BF(iniStateAs);
+    BF fnlState = regAsn2BF(fnlStateAs);
+    // iteratively find a patch that does not violate the intermediate states
+    BF isFB = safetyTransitionSet();   // mgr.constantTrue();
+    while (true) {
+        // check reachability for initStarte to the goal: one goal, one init and no env. vars...
+        std::cout << "=========<Patching Iteration: Check Reachability>==========" << std::endl;
+        std::pair<BF, int> reachablePair = checkReachable(iniState, goal, isFB);
+        BF strategy2Goal = reachablePair.first;
+        int layerNumb2Goal = reachablePair.second;
+        bool checkReach2Goal = (layerNumb2Goal != 0);
+        // check reachability from goal to the final state: one goal, one init and no env. vars...
+        reachablePair = checkReachable(goal, fnlState, isFB);
+        BF strategy2Fnl = reachablePair.first;
+        int layerNumb2Fnl = reachablePair.second;
+        bool checkReach2Fnl = (layerNumb2Fnl != 0);
+        if ((!checkReach2Goal) || (!checkReach2Fnl)) {
+            std::cout << "This horizon is not reachable" << std::endl;
+            return ret;
+        }
+        // if reachable, synthesis the strategy and do the cp
+        std::cout << "Patch Layer Number Guess: " << layerNumb2Goal + layerNumb2Fnl << std::endl;
+        std::cout << "=========<Patching Iteration: Trying CP the Patch>==========" << std::endl;
+        for (int i = 0; i < iniStateAs.size(); i++) {
+            pcvz->setRegionConstByIndex(i, -1, iniStateAs[i], fnlStateAs[i]);
+        }
+        pcvz->clearClauses();
+        BF2CVZClauses(strategy2Goal, firstStrategy);
+        BF2CVZClauses(strategy2Fnl, secondStrategy);
+        BF2CVZClauses(goal, goalState);
+        // increase the layer number until a solution is found
+        ppatch.clear();
+        int maxLayerNumbAdd = ((layerNumb2Goal - expFirstLayNumb) > (layerNumb2Fnl - expSecondLayNumb)) ? (layerNumb2Goal - expFirstLayNumb) : (layerNumb2Fnl - expSecondLayNumb);
+        int i = 0;
+        for (i = 0; i <= maxLayerNumbAdd; i++) {
+            std::cout << "Trying for " << i << " layers" << std::endl;
+            std::vector<std::vector<int>> dum;
+            pcvz->printMiniZinc(toPatcher, doublestrategy, "swarmTestFork", expFirstLayNumb + i, expSecondLayNumb + i, dum, final);
+            ppatch = pcvz->getPatch();
+            if (ppatch.size() > 0) {
+                break;
+            }
+        }
+        // return the patch
+        if (ppatch.size() > 0) {
+            // check for intermediate states
+            BF isFB_this = getIntermediateStateFeedback(ppatch);   // Intermediate State Feed Back
+            isFB &= isFB_this;
+            if (isFB_this.isTrue()) {
+                std::cout << "patch Found" << std::endl;
+                ret.first = ppatch;
+                ret.second = expFirstLayNumb + i;
+                return ret;
+            }
+        } else {
+            // synthesis failed for the given initial/final state
+            return ret;
+        }
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 bool
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP) {
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal_Legacy(int goalID, std::vector<std::pair<int, int>> locP) {
     std::cout << "=========<Patching For Goal: " << goalID << " >==========" << std::endl;
     std::vector<std::vector<int>> dum;
     // check for the patch bound
@@ -1062,6 +1228,114 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std:
                 patchFound = false;
             }
         }
+    }
+
+    return patchFound;
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+bool
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP) {
+    std::cout << "=========<Patching For Goal: " << goalID << " >==========" << std::endl;
+    std::vector<std::vector<int>> dum;
+    // check for the patch bound
+    int nextGoalID = (goalID + 1) % livenessGuarantees.size();
+    int tMax = p4Plan.getSuffixSize(goalID) - 1;
+    int tMaxNext = p4Plan.getSuffixSize(nextGoalID) - 1;
+    int tIni = tMax, tFnl = 0;
+    for (int i = 0; i < locP.size(); i++) {
+        if (locP[i].first == goalID) {
+            int tN = locP[i].second;
+            std::cout << "Problematic State: " << tN << std::endl;
+            if (tN > tFnl) {
+                tFnl = tN;
+            }
+            if (tN < tIni) {
+                tIni = tN;
+            }
+        }
+    }
+    // do a while loop until we find a patch
+    bool doubleStrategy = false;
+    std::cout << "=========<Patching Iteration>==========" << std::endl;
+    bool patchFound = false;
+    if (tIni > tFnl) {
+        std::cout << "No need to modify in this case" << std::endl;
+        patchFound = true;
+        return patchFound;
+    }
+    BF isFB = safetyTransitionSet();   // mgr.constantTrue();
+    std::vector<std::vector<int>> ppatch;
+    while (!patchFound) {
+        // get init/goal state as BF
+        std::cout << "=========<Patching Iteration: Getting Boundaries>==========" << std::endl;
+        std::cout << "Initial State: " << tIni << ", final state: " << tFnl << std::endl;
+        auto iniStateAs = rAs[goalID + 1][tIni];
+        // in the double strategy case, the final state comes from the next suffix
+        std::vector<int> fnlStateAs;
+        if (doubleStrategy) {
+            fnlStateAs = rAs[nextGoalID + 1][tFnl + 1];
+        } else {
+            fnlStateAs = rAs[goalID + 1][tFnl + 1];
+        }
+        BF iniState = regAsn2BF(iniStateAs);
+        BF fnlState = regAsn2BF(fnlStateAs);
+        // Build the patch
+        // Note that if the final state is the goal state, the final numeric condition is not important
+        if (doubleStrategy) {
+            int goalTranID = tMax;
+            // pair := (patch, the_#trans_of_first_strategy)
+            auto ppatchPair = patchForGivenHorizonDoubleStrategy(iniStateAs, fnlStateAs, (tMax - tIni + 1), (tFnl + 1), (goalID + 1) % livenessGuarantees.size(), true);
+            ppatch = ppatchPair.first;
+            if (ppatch.size() > 0) {
+                int fsLen = ppatchPair.second;   // first strategy length
+                int ssLen = ppatch.size() - ppatchPair.second;
+                std::vector<std::vector<int>> firstPatch(ppatch.begin(), ppatch.begin() + fsLen);
+                std::vector<std::vector<int>> secondPatch(ppatch.begin() + fsLen, ppatch.begin() + ppatch.size());
+                p4Plan.makePatch(firstPatch, goalID, tIni, tMax);
+                p4Plan.makePatch(secondPatch, nextGoalID, 0, tFnl);
+                // And also patch for the next rAs
+                std::vector<std::vector<int>> rAs_ng_old = rAs[nextGoalID + 1];
+                rAs[nextGoalID + 1].clear();
+                for (int j = 0; j < ssLen; j++) {
+                    rAs[nextGoalID + 1].push_back(pcvz->edge2RegionState(true, ppatch[fsLen + j]));
+                }
+                for (int j = tFnl + 1; j < rAs_ng_old.size(); j++) {
+                    rAs[nextGoalID + 1].push_back(rAs_ng_old[j]);
+                }
+                patchFound = true;
+                break;
+            }
+        } else {
+            ppatch = patchForGivenHorizon(iniStateAs, fnlStateAs, (tFnl - tIni + 1), true);
+            if (ppatch.size() > 0) {
+                p4Plan.makePatch(ppatch, goalID, tIni, tFnl);
+                patchFound = true;
+                break;
+            }
+        }
+        // if not reachable or the cp failed, increase the patch horizon
+        std::cout << "=========<Patching Iteration: Expand the Patch Horizon>==========" << std::endl;
+        int ntIni = std::max(0, tIni - 1);
+        int ntFnl;
+        if (doubleStrategy) {
+            ntFnl = std::min((int) tMaxNext, tFnl + 1);
+        } else {
+            ntFnl = std::min((int) tMax, tFnl + 1);
+        }
+        // this means the patch will cover the goal state
+        if ((!doubleStrategy) && (ntFnl == tFnl)) {
+            doubleStrategy = true;
+            ntFnl = 0;
+        }
+        // max patch horizon will be "the start of the current suffix" and "the end of the next suffix"
+        if ((ntIni == tIni)) {
+            if ((doubleStrategy) && (ntFnl == tFnl)) {
+                break;
+            }
+        }
+        tIni = ntIni;
+        tFnl = ntFnl;
     }
 
     return patchFound;
@@ -1195,6 +1469,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             }
         }
 
+        p4Plan.printTransitions();
         // if failed, print something
         if (!patchFound) {
             std::cout << "Patch Failed" << std::endl;
@@ -1209,7 +1484,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
     // 2. Make current codes be able to run plan with many goals (\/)
     // 3. Integrate Salar's Intermediate State Checker (\/)
     // 3-1. Patching prefix after reallocation causes problems because the patch is difficult to include both the re-allocation and new prefixes
-    // 4. DO the patch when the modification affects the goal states
+    // 4. DO the patch when the modification affects the goal states (\/)
     // 5. Interactive interface (\/)
     // 6. Difference of the BB in CP solvers and doing "feedback and conflict solving" on GR(1)?
     // 7. Cases:
@@ -1217,7 +1492,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
     // 7-2. RMV P O -> DEC P 6: Runs OK
     // 7-3. RAL 1 -1 (4,6) ->6: Runs OK
     // 8. Patch Expansion
-    // 9. Cost Function When Reallocate
+    // 9. Cost Function When Reallocate (\/)
+    // 10. the "goal state" should be the same for prefix and last suffix (both go to live. guar. 0) after any modification
 }
 
 template class XSwarmTest<GR1Context, false, false>;

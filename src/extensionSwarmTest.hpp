@@ -91,7 +91,13 @@ class XSwarmTest : public T {
 
     void safetySys2IntState();
 
+    BF safetyTransitionSetRec(BF F, std::vector<std::pair<int, int>> edgePred);
+
+    BF safetyTransitionSet();
+
     void testingBF();
+
+    void BF2CVZClauses(BF bf, whichClause wc);
 
     std::vector<BF> computeSymbolicStrategy();
 
@@ -99,13 +105,19 @@ class XSwarmTest : public T {
 
     void reallocation();
 
+    bool patchForGoal_Legacy(int goalID, std::vector<std::pair<int, int>> locP);
+
     bool patchForGoal(int goalID, std::vector<std::pair<int, int>> locP);
 
     void updateRAS();
 
     BF getIntermediateStateFeedback(std::vector<std::vector<int>> transition);
 
+    std::pair<BF, int> checkReachable(BF start, BF end, BF &isFB);
+
     std::vector<std::vector<int>> patchForGivenHorizon(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expLayNumb, bool final);
+
+    std::pair<std::vector<std::vector<int>>, int> patchForGivenHorizonDoubleStrategy(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expFirstLayNumb, int expSecondLayNumb, int goalNumb, bool final);
 
   public:
     void execute() {

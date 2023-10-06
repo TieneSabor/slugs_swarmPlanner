@@ -274,7 +274,7 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
             // execvp("minizinc", argv);
         }
         // get the string from pipe
-        int bufSize = 100, ret = 0;
+        int bufSize = 200, ret = 0;
         char buff[bufSize + 1];
         buff[bufSize] = '\0';
         std::string mnzEop = "----------";
@@ -282,10 +282,11 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
         std::stringstream bufStream;
         do {
             ret = read(link[0], buff, bufSize);
+            // std::cout << ret << std::endl;
+            // std::cout << bufStream.str() << std::endl;
             buff[ret] = '\0';
             bufStream << buff;
         } while (ret == bufSize);
-        // std::cout << bufStream.str();
         // wait for the child to complete
         int res = waitPidHandy(pid1);
         close(link[1]);
