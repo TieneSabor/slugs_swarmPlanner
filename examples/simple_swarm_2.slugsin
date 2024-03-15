@@ -14,7 +14,7 @@ E
 [ENV_INIT]
 
 [SYS_INIT]
-& A & ! B & ! C & ! D ! E
+& A & B & ! C & ! D ! E
 
 [ENV_TRANS]
 
@@ -41,5 +41,5 @@ E
 
 [SYS_LIVENESS]
 # & A & ! B & ! C & ! D ! E
-& E & ! A & ! B & ! C D
+& E & ! A & ! B & ! C ! D
 # & C & A & ! B & ! E ! D

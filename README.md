@@ -21,6 +21,10 @@ Requirements
 - A moderately modern C++ and C compiler installed in a Unix-like environment, including the C++ library boost. Linux and MacOS should be fine.
 - An installation of Python 2, version 2.7 or above. The Python _curses_ library must be installed for the interactive specification debugger to be usable.
 
+sudo apt install make
+sudo apt install build-essential
+sudo apt install libboost-all-dev
+
 Using Slugs on Linux
 -------------------
 In order to build slugs, open a terminal and type:

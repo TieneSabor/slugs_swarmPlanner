@@ -14,17 +14,17 @@ E
 [ENV_INIT]
 
 [SYS_INIT]
-& A & ! B & ! C & ! D ! E
+& A & B & ! C & ! D ! E
 
 [ENV_TRANS]
 
 [SYS_TRANS]
 # out degree
-| ! A | A' | B' | C' D'
-| ! B | A' | B' | C' E'
-| ! C | A' | B' | C' | D' E'
-| ! D | A' | C' | D' E'
-| ! E | B' | C' | D' E'
+# | ! A | A' | B' | C' D'
+# | ! B | A' | B' | C' E'
+# | ! C | A' | B' | C' | D' E'
+# | ! D | A' | C' | D' E'
+# | ! E | B' | C' | D' E'
 # in degree
 | ! A' | A | B | C D
 | ! B' | A | B | C E
@@ -41,5 +41,5 @@ E
 
 [SYS_LIVENESS]
 # & A & ! B & ! C & ! D ! E
-& E & ! A & ! B & ! C D
+& E & ! A & ! B & ! C ! D
 # & C & A & ! B & ! E ! D

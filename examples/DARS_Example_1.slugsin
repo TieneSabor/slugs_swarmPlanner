@@ -1,7 +1,7 @@
 # specify regions
 # A 10 5 0
 # B 10 5 0
-# C 15 0 0
+# C 10 0 0
 # D 10 0 0
 # E 10 0 10
 # specify edges
@@ -18,10 +18,17 @@
 # C D
 # C E
 # D E
+# specify decreased region max number
+# C 6
 # regional map end
 [INPUT]
 
 [OUTPUT]
+# A
+# B
+# C
+# D
+# E
 
 [ENV_INIT]
 
@@ -31,15 +38,10 @@
 [ENV_TRANS]
 
 [SYS_TRANS]
-# user set-up safety
-# ! D
-| ! B ! E
-# | ! D ! E
+| ! E C
 
 [ENV_LIVENESS]
 
 [SYS_LIVENESS]
-# & A & ! B & ! C & ! D ! E
-& E & ! A & ! B & C ! D
-& D & ! A & B & ! C ! E
-# & A & E & ! C & ! B ! D
+& C & ! B & ! A & ! D ! E
+E

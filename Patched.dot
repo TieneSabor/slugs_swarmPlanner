@@ -1,141 +1,54 @@
 digraph {
-K0 [label="K: 0"];
-L0 [label="L: 0"];
-M0 [label="M: 0"];
-N0 [label="N: 0"];
-O0 [label="O: 0"];
-P0 [label="P: 5"];
-Q0 [label="Q: 0"];
-R0 [label="R: 0"];
-S0 [label="S: 5"];
-rank = same {K0 -> L0 -> M0 -> N0 -> O0 -> P0 -> Q0 -> R0 -> S0 [style=invis] }K1 [label="K: 0"];
-L1 [label="L: 0"];
-M1 [label="M: 0"];
-N1 [label="N: 0"];
-O1 [label="O: 0"];
-P1 [label="P: 3"];
-Q1 [label="Q: 2"];
-R1 [label="R: 0"];
-S1 [label="S: 5"];
-rank = same {K1 -> L1 -> M1 -> N1 -> O1 -> P1 -> Q1 -> R1 -> S1 [style=invis] }P0 -> P1
-P0 -> Q1
-S0 -> S1
-K2 [label="K: 0"];
-L2 [label="L: 0"];
-M2 [label="M: 0"];
-N2 [label="N: 0"];
-O2 [label="O: 0"];
-P2 [label="P: 3"];
-Q2 [label="Q: 0"];
-R2 [label="R: 0"];
-S2 [label="S: 7"];
-rank = same {K2 -> L2 -> M2 -> N2 -> O2 -> P2 -> Q2 -> R2 -> S2 [style=invis] }P1 -> P2
-Q1 -> S2
-S1 -> S2
-K3 [label="K: 0"];
-L3 [label="L: 0"];
-M3 [label="M: 0"];
-N3 [label="N: 0"];
-O3 [label="O: 3"];
-P3 [label="P: 0"];
-Q3 [label="Q: 7"];
-R3 [label="R: 0"];
-S3 [label="S: 0"];
-rank = same {K3 -> L3 -> M3 -> N3 -> O3 -> P3 -> Q3 -> R3 -> S3 [style=invis] }P2 -> O3
-S2 -> Q3
-K4 [label="K: 0"];
-L4 [label="L: 0"];
-M4 [label="M: 0"];
-N4 [label="N: 1"];
-O4 [label="O: 2"];
-P4 [label="P: 0"];
-Q4 [label="Q: 7"];
-R4 [label="R: 0"];
-S4 [label="S: 0"];
-rank = same {K4 -> L4 -> M4 -> N4 -> O4 -> P4 -> Q4 -> R4 -> S4 [style=invis] }O3 -> N4
-O3 -> O4
-Q3 -> Q4
-K5 [label="K: 0"];
-L5 [label="L: 0"];
-M5 [label="M: 0"];
-N5 [label="N: 0"];
-O5 [label="O: 3"];
-P5 [label="P: 5"];
-Q5 [label="Q: 0"];
-R5 [label="R: 0"];
-S5 [label="S: 2"];
-rank = same {K5 -> L5 -> M5 -> N5 -> O5 -> P5 -> Q5 -> R5 -> S5 [style=invis] }N4 -> O5
-O4 -> O5
-Q4 -> P5
-Q4 -> S5
-K6 [label="K: 0"];
-L6 [label="L: 0"];
-M6 [label="M: 0"];
-N6 [label="N: 0"];
-O6 [label="O: 3"];
-P6 [label="P: 5"];
-Q6 [label="Q: 0"];
-R6 [label="R: 2"];
-S6 [label="S: 0"];
-rank = same {K6 -> L6 -> M6 -> N6 -> O6 -> P6 -> Q6 -> R6 -> S6 [style=invis] }O5 -> O6
-P5 -> P6
-S5 -> R6
-K7 [label="K: 0"];
-L7 [label="L: 0"];
-M7 [label="M: 2"];
-N7 [label="N: 0"];
-O7 [label="O: 8"];
-P7 [label="P: 0"];
-Q7 [label="Q: 0"];
-R7 [label="R: 0"];
-S7 [label="S: 0"];
-rank = same {K7 -> L7 -> M7 -> N7 -> O7 -> P7 -> Q7 -> R7 -> S7 [style=invis] }O6 -> O7
-P6 -> O7
-R6 -> M7
-K8 [label="K: 10"];
-L8 [label="L: 0"];
-M8 [label="M: 0"];
-N8 [label="N: 0"];
-O8 [label="O: 0"];
-P8 [label="P: 0"];
-Q8 [label="Q: 0"];
-R8 [label="R: 0"];
-S8 [label="S: 0"];
-rank = same {K8 -> L8 -> M8 -> N8 -> O8 -> P8 -> Q8 -> R8 -> S8 [style=invis] }M7 -> K8
-O7 -> K8
-K9 [label="K: 3"];
-L9 [label="L: 0"];
-M9 [label="M: 7"];
-N9 [label="N: 0"];
-O9 [label="O: 0"];
-P9 [label="P: 0"];
-Q9 [label="Q: 0"];
-R9 [label="R: 0"];
-S9 [label="S: 0"];
-rank = same {K9 -> L9 -> M9 -> N9 -> O9 -> P9 -> Q9 -> R9 -> S9 [style=invis] }K8 -> K9
-K8 -> M9
-K10 [label="K: 0"];
-L10 [label="L: 0"];
-M10 [label="M: 0"];
-N10 [label="N: 0"];
-O10 [label="O: 3"];
-P10 [label="P: 0"];
-Q10 [label="Q: 0"];
-R10 [label="R: 7"];
-S10 [label="S: 0"];
-rank = same {K10 -> L10 -> M10 -> N10 -> O10 -> P10 -> Q10 -> R10 -> S10 [style=invis] }K9 -> O10
-M9 -> R10
-K11 [label="K: 0"];
-L11 [label="L: 0"];
-M11 [label="M: 0"];
-N11 [label="N: 0"];
-O11 [label="O: 0"];
-P11 [label="P: 3"];
-Q11 [label="Q: 0"];
-R11 [label="R: 0"];
-S11 [label="S: 7"];
-rank = same {K11 -> L11 -> M11 -> N11 -> O11 -> P11 -> Q11 -> R11 -> S11 [style=invis] }O10 -> P11
-R10 -> S11
-K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 -> K8 -> K9 -> K10 -> K11 [ style=invis; weight=1000 ]
-S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> S7 -> S8 -> S9 -> S10 -> S11 [ style=invis; weight=1000 ]
+A0 [label="A: 5"];
+B0 [label="B: 5"];
+C0 [label="C: 0"];
+D0 [label="D: 0"];
+E0 [label="E: 0"];
+rank = same {A0 -> B0 -> C0 -> D0 -> E0 [style=invis] }A1 [label="A: 6"];
+B1 [label="B: 0"];
+C1 [label="C: 4"];
+D1 [label="D: 0"];
+E1 [label="E: 0"];
+rank = same {A1 -> B1 -> C1 -> D1 -> E1 [style=invis] }A0 -> A1
+A0 -> C1
+B0 -> A1
+A2 [label="A: 0"];
+B2 [label="B: 0"];
+C2 [label="C: 6"];
+D2 [label="D: 0"];
+E2 [label="E: 4"];
+rank = same {A2 -> B2 -> C2 -> D2 -> E2 [style=invis] }A1 -> C2
+C1 -> E2
+A3 [label="A: 6"];
+B3 [label="B: 0"];
+C3 [label="C: 4"];
+D3 [label="D: 0"];
+E3 [label="E: 0"];
+rank = same {A3 -> B3 -> C3 -> D3 -> E3 [style=invis] }C2 -> A3
+E2 -> C3
+A4 [label="A: 0"];
+B4 [label="B: 9"];
+C4 [label="C: 0"];
+D4 [label="D: 1"];
+E4 [label="E: 0"];
+rank = same {A4 -> B4 -> C4 -> D4 -> E4 [style=invis] }A3 -> B4
+A3 -> D4
+C3 -> B4
+A5 [label="A: 6"];
+B5 [label="B: 0"];
+C5 [label="C: 4"];
+D5 [label="D: 0"];
+E5 [label="E: 0"];
+rank = same {A5 -> B5 -> C5 -> D5 -> E5 [style=invis] }B4 -> A5
+B4 -> C5
+D4 -> A5
+A6 [label="A: 0"];
+B6 [label="B: 0"];
+C6 [label="C: 6"];
+D6 [label="D: 0"];
+E6 [label="E: 4"];
+rank = same {A6 -> B6 -> C6 -> D6 -> E6 [style=invis] }A5 -> C6
+C5 -> E6
+A0 -> A1 -> A2 -> A3 -> A4 -> A5 -> A6 [ style=invis; weight=1000 ]
+E0 -> E1 -> E2 -> E3 -> E4 -> E5 -> E6 [ style=invis; weight=1000 ]
 }

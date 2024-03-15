@@ -1,0 +1,33 @@
+# specify regions
+# A 10 2 0
+# B 10 0 0
+# C 10 0 0
+# specify edges
+# A A
+# B B
+# C C
+# A B
+# B C
+# regional map end
+[INPUT]
+
+[OUTPUT]
+
+[ENV_INIT]
+
+[SYS_INIT]
+# & A B
+A
+
+[ENV_TRANS]
+
+[SYS_TRANS]
+# user set-up safety
+# | ! B ! E
+| ! C B
+
+[ENV_LIVENESS]
+
+[SYS_LIVENESS]
+& B & ! A ! C
+C

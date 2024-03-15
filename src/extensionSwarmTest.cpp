@@ -445,7 +445,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSetRec(BF F, 
         BF rightF = (F & ((variables[e.first * 2] & variables[e.second * 2])));
         BF leftAns = safetyTransitionSetRec(leftF, nEP);
         BF rightAns = safetyTransitionSetRec(rightF, nEP);
-        return (leftAns | (EF)) & (rightAns | (!EF));
+        // return (leftAns | (EF)) & (rightAns | (!EF));
+        return (leftAns & (!EF)) | (rightAns & (EF));
     }
     // If not, pass: F = F(e=0)*(!e)
     else {
