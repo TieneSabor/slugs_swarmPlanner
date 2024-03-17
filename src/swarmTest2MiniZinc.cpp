@@ -199,7 +199,13 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
     case (doublestrategy):
         if ((firstLayerNumber == 0) || (secondLayerNumber == 0))
             return;
-        miniZinc = miniZincDoubleStrategy(firstLayerNumber, secondLayerNumber, finalBC);
+        miniZinc = miniZincDoubleStrategy(firstLayerNumber, secondLayerNumber, finalBC, false);
+        break;
+
+    case (doublestrategy_fixgoal):
+        if ((firstLayerNumber == 0) || (secondLayerNumber == 0))
+            return;
+        miniZinc = miniZincDoubleStrategy(firstLayerNumber, secondLayerNumber, finalBC, true);
         break;
 
     default:
@@ -242,7 +248,7 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
             // re-direct the std out
             // std::cout << mznFileName << ", " << outFileName << std::endl;
             int resd = dup2(link[1], STDOUT_FILENO);
-            execv("/home/brad/Downloads/MiniZincIDE-2.7.6-bundle-linux-x86_64/bin/minizinc", argv);
+            execv("/home/brad/Downloads/MiniZincIDE-2.8.3-bundle-linux-x86_64/bin/minizinc", argv);
             // execvp("minizinc", argv);
         }
         // wait for the child to complete
@@ -270,7 +276,7 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
             // re-direct the std out
             // std::cout << mznFileName << ", " << outFileName << std::endl;
             int resd = dup2(link[1], STDOUT_FILENO);
-            execv("/home/brad/Downloads/MiniZincIDE-2.7.6-bundle-linux-x86_64/bin/minizinc", argv);
+            execv("/home/brad/Downloads/MiniZincIDE-2.8.3-bundle-linux-x86_64/bin/minizinc", argv);
             // execvp("minizinc", argv);
         }
         // get the string from pipe
@@ -620,7 +626,7 @@ convert2MiniZinc::miniZincReassign(std::vector<std::vector<int>> assignment, boo
 }
 
 std::string
-convert2MiniZinc::miniZincDoubleStrategy(unsigned int firstLayerNumber, unsigned int secondLayerNumber, bool finalBC) {
+convert2MiniZinc::miniZincDoubleStrategy(unsigned int firstLayerNumber, unsigned int secondLayerNumber, bool finalBC, bool fixGoal) {
     std::ostringstream os;
     unsigned int layernumber = firstLayerNumber + secondLayerNumber;
     // print region variables
@@ -683,29 +689,37 @@ convert2MiniZinc::miniZincDoubleStrategy(unsigned int firstLayerNumber, unsigned
     }
     // print the goal state specification
     os << mZCom("GoalState Constraints");
-    int nGSC = _goalStateClauses.size();
-    for (int j = 0; j < nGSC; j++) {
-        struct clause clausej = _goalStateClauses[j];
-        int jB = clausej.beforeRegionIndex.size();
-        std::string cj;
-        for (int k = 0; k < jB; k++) {
-            int iR = clausej.beforeRegionIndex[k];
-            bool cm = clausej.beforeComplemented[k];
-            std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 1);
-            std::string li = mznLiteral(!cm, rP);
-            cj += li + " \\/ ";
-        }
-        // this section should do nothing
-        // int jA = clausej.afterRegionIndex.size();
-        // for (int k = 0; k < jA; k++) {
-        //     int iR = clausej.afterRegionIndex[k];
-        //     bool cm = clausej.afterComplemented[k];
-        //     std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 2);
-        //     std::string li = mznLiteral(!cm, rP);
-        //     cj += li + " \\/ ";
+    if (fixGoal) {
+        os << mZCom("This is wrong... fixGoal should not be true");
+        // for (int j = 0; j < nR; j++) {
+        //     std::string rP = "r" + _regionNames[j] + std::to_string(firstLayerNumber + 1);
+        //     os << mZCtr(rP + " == " + std::to_string(_fnlNs[j]));
         // }
-        cj = cj.substr(0, cj.size() - 3);   // take away the last "\/ "
-        os << mZCtr(cj);
+    } else {
+        int nGSC = _goalStateClauses.size();
+        for (int j = 0; j < nGSC; j++) {
+            struct clause clausej = _goalStateClauses[j];
+            int jB = clausej.beforeRegionIndex.size();
+            std::string cj;
+            for (int k = 0; k < jB; k++) {
+                int iR = clausej.beforeRegionIndex[k];
+                bool cm = clausej.beforeComplemented[k];
+                std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 1);
+                std::string li = mznLiteral(!cm, rP);
+                cj += li + " \\/ ";
+            }
+            // this section should do nothing
+            // int jA = clausej.afterRegionIndex.size();
+            // for (int k = 0; k < jA; k++) {
+            //     int iR = clausej.afterRegionIndex[k];
+            //     bool cm = clausej.afterComplemented[k];
+            //     std::string rP = "r" + _regionNames[iR] + std::to_string(firstLayerNumber + 2);
+            //     std::string li = mznLiteral(!cm, rP);
+            //     cj += li + " \\/ ";
+            // }
+            cj = cj.substr(0, cj.size() - 3);   // take away the last "\/ "
+            os << mZCtr(cj);
+        }
     }
     // print conservation law: inlet sum equals after region value, and outlet sum equals before region value
     os << mZCom("Conservation Constraint: Inlets");

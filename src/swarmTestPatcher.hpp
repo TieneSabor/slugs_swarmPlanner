@@ -39,7 +39,7 @@ namespace swarmTest{
         }
 
         // add or remove a certain edge in the existing patch
-        // add: add an empty assignment at each transition after the edgeID
+        // add: add an empty assignment at each transition before the edgeID
         // remove: remove the assignment at each transition at the edgeID
         void updateEdge(bool remove, int edgeID) {
             if (!_inited) {
@@ -57,7 +57,7 @@ namespace swarmTest{
             }
         }
 
-        void updateEdge(bool remove, std::vector<int> edgeID, int goalID) {
+        void updateEdges(bool remove, std::vector<int> edgeID, int goalID) {
             if (!_inited) {
                 std::cout << "No any transitions in the patcher yet..." << std::endl;
             }
@@ -73,6 +73,22 @@ namespace swarmTest{
                 // modify the suffix
                 for (int i = 0; i < _tranSuffix[goalID].trans.size(); i++) {
                     updateEdgeOnATran(remove, edgeID, _tranSuffix[goalID].trans[i]);
+                }
+            }
+        }
+
+        void updateEdges(bool remove, std::vector<int> edgeIDs) {
+            if (!_inited) {
+                std::cout << "No any transitions in the patcher yet..." << std::endl;
+            }
+            // modify the prefix
+            for (int i = 0; i < _tranPrefix.trans.size(); i++) {
+                updateEdgeOnATran(remove, edgeIDs, _tranPrefix.trans[i]);
+            }
+            // modify the suffix
+            for (int j = 0; j < _tranSuffix.size(); j++) {
+                for (int i = 0; i < _tranSuffix[j].trans.size(); i++) {
+                    updateEdgeOnATran(remove, edgeIDs, _tranSuffix[j].trans[i]);
                 }
             }
         }
@@ -218,21 +234,29 @@ namespace swarmTest{
                   std::cout << "Edge to be added not existed" << std::endl;
                   return;
               }
-              tran.insert(tran.begin() + edgeID + 1, 0);
+              tran.insert(tran.begin() + edgeID, 0);
           }
       }
 
-      void updateEdgeOnATran(bool remove, std::vector<int> edgeID, std::vector<int> &tran) {
+      void updateEdgeOnATran(bool remove, std::vector<int> edgeIDs, std::vector<int> &tran) {
           if (remove) {
               std::vector<int> oldTran = tran;
               tran.clear();
               for (int i = 0; i < oldTran.size(); i++) {
-                  if (!intInVec(i, edgeID)) {
+                  if (!intInVec(i, edgeIDs)) {
                       tran.push_back(oldTran[i]);
                   }
               }
           } else {
-              std::cout << "Add a set of edge to a patch is not supported" << std::endl;
+              //   std::cout << "Add a set of edge to a patch is not supported" << std::endl;
+              std::vector<int> oldTran = tran;
+              tran.clear();
+              for (int i = 0; i < oldTran.size(); i++) {
+                  tran.push_back(oldTran[i]);
+                  if (intInVec(i, edgeIDs)) {
+                      tran.push_back(0);
+                  }
+              }
           }
       }
 

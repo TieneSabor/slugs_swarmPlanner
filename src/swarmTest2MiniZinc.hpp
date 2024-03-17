@@ -57,7 +57,8 @@ enum printFor {
     patching,
     reassignment,
     planassignment,
-    doublestrategy
+    doublestrategy,
+    doublestrategy_fixgoal
 };
 
 enum whichClause {
@@ -327,7 +328,7 @@ class convert2MiniZinc {
     std::string miniZincReassign(std::vector<std::vector<int>> assignment, bool finalBC);
 
     std::string
-    miniZincDoubleStrategy(unsigned int layernumber, unsigned int secondLayerNumber, bool finalBC);
+    miniZincDoubleStrategy(unsigned int layernumber, unsigned int secondLayerNumber, bool finalBC, bool fixGoal);
 
     // for working with the patcher
     std::vector<std::vector<int>> _patch;
