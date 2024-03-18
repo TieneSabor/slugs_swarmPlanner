@@ -36,8 +36,8 @@ J2 [label="J: 0"];
 K2 [label="K: 0"];
 rank = same {A2 -> B2 -> C2 -> D2 -> E2 -> F2 -> G2 -> H2 -> I2 -> J2 -> K2 [style=invis] }F1 -> E2
 K1 -> E2
-A3 [label="A: 49"];
-B3 [label="B: 1"];
+A3 [label="A: 30"];
+B3 [label="B: 20"];
 C3 [label="C: 0"];
 D3 [label="D: 0"];
 E3 [label="E: 0"];
@@ -67,38 +67,64 @@ B5 [label="B: 0"];
 C5 [label="C: 0"];
 D5 [label="D: 0"];
 E5 [label="E: 0"];
-F5 [label="F: 0"];
+F5 [label="F: 50"];
 G5 [label="G: 0"];
 H5 [label="H: 0"];
 I5 [label="I: 0"];
 J5 [label="J: 0"];
-K5 [label="K: 50"];
-rank = same {A5 -> B5 -> C5 -> D5 -> E5 -> F5 -> G5 -> H5 -> I5 -> J5 -> K5 [style=invis] }E4 -> K5
+K5 [label="K: 0"];
+rank = same {A5 -> B5 -> C5 -> D5 -> E5 -> F5 -> G5 -> H5 -> I5 -> J5 -> K5 [style=invis] }E4 -> F5
 A6 [label="A: 0"];
 B6 [label="B: 0"];
 C6 [label="C: 0"];
-D6 [label="D: 0"];
-E6 [label="E: 50"];
+D6 [label="D: 30"];
+E6 [label="E: 0"];
 F6 [label="F: 0"];
 G6 [label="G: 0"];
 H6 [label="H: 0"];
 I6 [label="I: 0"];
 J6 [label="J: 0"];
-K6 [label="K: 0"];
-rank = same {A6 -> B6 -> C6 -> D6 -> E6 -> F6 -> G6 -> H6 -> I6 -> J6 -> K6 [style=invis] }K5 -> E6
-A7 [label="A: 49"];
-B7 [label="B: 1"];
+K6 [label="K: 20"];
+rank = same {A6 -> B6 -> C6 -> D6 -> E6 -> F6 -> G6 -> H6 -> I6 -> J6 -> K6 [style=invis] }F5 -> D6
+F5 -> K6
+A7 [label="A: 0"];
+B7 [label="B: 0"];
 C7 [label="C: 0"];
 D7 [label="D: 0"];
 E7 [label="E: 0"];
-F7 [label="F: 0"];
+F7 [label="F: 50"];
 G7 [label="G: 0"];
 H7 [label="H: 0"];
 I7 [label="I: 0"];
 J7 [label="J: 0"];
 K7 [label="K: 0"];
-rank = same {A7 -> B7 -> C7 -> D7 -> E7 -> F7 -> G7 -> H7 -> I7 -> J7 -> K7 [style=invis] }E6 -> A7
-E6 -> B7
-A0 -> A1 -> A2 -> A3 -> A4 -> A5 -> A6 -> A7 [ style=invis; weight=1000 ]
-K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 [ style=invis; weight=1000 ]
+rank = same {A7 -> B7 -> C7 -> D7 -> E7 -> F7 -> G7 -> H7 -> I7 -> J7 -> K7 [style=invis] }D6 -> F7
+K6 -> F7
+A8 [label="A: 0"];
+B8 [label="B: 0"];
+C8 [label="C: 0"];
+D8 [label="D: 0"];
+E8 [label="E: 50"];
+F8 [label="F: 0"];
+G8 [label="G: 0"];
+H8 [label="H: 0"];
+I8 [label="I: 0"];
+J8 [label="J: 0"];
+K8 [label="K: 0"];
+rank = same {A8 -> B8 -> C8 -> D8 -> E8 -> F8 -> G8 -> H8 -> I8 -> J8 -> K8 [style=invis] }F7 -> E8
+A9 [label="A: 30"];
+B9 [label="B: 20"];
+C9 [label="C: 0"];
+D9 [label="D: 0"];
+E9 [label="E: 0"];
+F9 [label="F: 0"];
+G9 [label="G: 0"];
+H9 [label="H: 0"];
+I9 [label="I: 0"];
+J9 [label="J: 0"];
+K9 [label="K: 0"];
+rank = same {A9 -> B9 -> C9 -> D9 -> E9 -> F9 -> G9 -> H9 -> I9 -> J9 -> K9 [style=invis] }E8 -> A9
+E8 -> B9
+A0 -> A1 -> A2 -> A3 -> A4 -> A5 -> A6 -> A7 -> A8 -> A9 [ style=invis; weight=1000 ]
+K0 -> K1 -> K2 -> K3 -> K4 -> K5 -> K6 -> K7 -> K8 -> K9 [ style=invis; weight=1000 ]
 }

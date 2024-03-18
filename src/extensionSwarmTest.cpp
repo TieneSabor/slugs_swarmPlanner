@@ -962,6 +962,14 @@ std::pair<std::vector<std::vector<int>>, int>
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizonDoubleStrategy(std::vector<int> iniStateAs, std::vector<int> fnlStateAs, int expFirstLayNumb, int expSecondLayNumb, int goalNumb, bool final) {
     std::vector<std::vector<int>> ppatch;
     auto ret = std::make_pair(ppatch, 0);
+    // Check the horizons do not exceed region max first
+    std::vector<int> caps = pcvz->getRegionCap();
+    for (int i = 0; i < caps.size(); i++) {
+        if ((iniStateAs[i] > caps[i]) || (fnlStateAs[i] > caps[i])) {
+            std::cout << "Patch horizons exceed regional capacities.  Patch will not work" << std::endl;
+            return ret;
+        }
+    }
     // specify the goal state within the patch
     BF goal;
     if ((goalNumb < livenessGuarantees.size()) && (goalNumb >= 0)) {
@@ -1190,11 +1198,13 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             std::cout << "And the new capacity?" << std::endl;
             std::cin >> modMaxStr;
             modMax = stoi(modMaxStr);
+            newCaps.push_back(std::make_pair(modReg, modMax));
         } else if (typeM == "RMV") {
             std::cout << "Remove the edge.  From which region?" << std::endl;
             std::cin >> rmvEdgeFrom;
             std::cout << "To which region?" << std::endl;
             std::cin >> rmvEdgeTo;
+            modEdges.push_back(std::make_pair(std::make_pair(rmvEdgeFrom, rmvEdgeTo), true));
         } else if (typeM == "RAL") {
             std::cout << "Please specify the transition ID: " << std::endl;
             std::cin >> tidStr;
@@ -1231,11 +1241,12 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             std::cout << "Strange Modification Type " << typeM << std::endl;
         }
 
+        // check for reassignment
+        reallocation();
         // Update Region Map
         updateRAS();
         // If the modification of regional robot capacity is required
         std::vector<int> originalEdgeMax, newEdgeMax;
-        // std::cout << modReg << std::endl;
         if ((newCaps.size() != 0)) {
             originalEdgeMax = pcvz->getEdgeMax();
             for (auto newCap : newCaps) {
@@ -1259,7 +1270,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
                 rmvEdgeTo = edge.first.second;
                 bool isRmv = edge.second;
                 std::cout << rmvEdgeFrom << " -> " << rmvEdgeTo << ": " << isRmv << std::endl;
-                // TODO: if rmv, add edge before get eid, vice versa
+                // if rmv, add edge AFTER get eid, vice versa
                 if (rmvEdgeFrom == rmvEdgeTo) {
                     directed = true;
                     if (!isRmv) {
@@ -1302,61 +1313,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             p4Plan.printTransitions();
         }
 
-        // check for reassignment
-        reallocation();
-        // updateRAS();
-
         std::cout << "=========<Do an initial guess on Patch Horizon>==========" << std::endl;
-        // If there is any removal of an edge
-        // if ((rmvEdgeFrom.size() != 0) && (rmvEdgeTo.size() != 0)) {
-        //     bool directed = false;
-        //     if (rmvEdgeFrom == rmvEdgeTo) {
-        //         directed = true;
-        //         pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
-        //         int rmvEdgeID = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
-        //         p4Plan.updateEdge(true, rmvEdgeID);
-        //     } else {
-        //         directed = true;
-        //         int rmvEdgeID1 = pcvz->getEdgeIDByName(rmvEdgeFrom, rmvEdgeTo);
-        //         pcvz->addEdgeByName(directed, true, rmvEdgeFrom, rmvEdgeTo);
-        //         p4Plan.updateEdge(true, rmvEdgeID1);
-        //         int rmvEdgeID2 = pcvz->getEdgeIDByName(rmvEdgeTo, rmvEdgeFrom);
-        //         pcvz->addEdgeByName(directed, true, rmvEdgeTo, rmvEdgeFrom);
-        //         p4Plan.updateEdge(true, rmvEdgeID2);
-        //         // p4Plan.cleanEidRmv();
-        //         // p4Plan.specifyEidRmv(rmvEdgeID1);
-        //         // p4Plan.specifyEidRmv(rmvEdgeID2);
-        //     }
-        //     // update the max region capaciy
-        //     auto newEdgeMax = pcvz->getEdgeMax();
-        //     std::vector<int> edgeIDs;
-        //     for (int i = 0; i < newEdgeMax.size(); i++) {
-        //         std::cout << newEdgeMax[i] << " ";
-        //         edgeIDs.push_back(i);
-        //     }
-        //     std::cout << std::endl;
-        //     p4Plan.updateCapacity(edgeIDs, newEdgeMax);
-        //     p4Plan.printTransitions();
-        // }
-        // If the modification of regional robot capacity is required
-        // std::vector<int> originalEdgeMax, newEdgeMax;
-        // std::cout << modReg << std::endl;
-        if ((modReg.size() != 0)) {
-            originalEdgeMax = pcvz->getEdgeMax();
-            pcvz->setRegionConstByName(modReg, modMax, -1, -1);
-            newEdgeMax = pcvz->getEdgeMax();
-            // update the max region capaciy
-            std::vector<int> edgeIDs;
-            for (int i = 0; i < newEdgeMax.size(); i++) {
-                std::cout << newEdgeMax[i] << " ";
-                edgeIDs.push_back(i);
-            }
-            std::cout << std::endl;
-            p4Plan.updateCapacity(edgeIDs, newEdgeMax);
-        }
-
         std::vector<std::pair<int, int>> locP = p4Plan.localizePatch();
-
         // do the patch
         bool patchFound = true;
         for (int i = 0; i <= livenessGuarantees.size(); i++) {
