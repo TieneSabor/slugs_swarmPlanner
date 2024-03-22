@@ -327,9 +327,11 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSetRec(BF F, 
         if (F.isFalse()) {
             // BF or False = BF
             return mgr.constantFalse();
+            // return mgr.constantTrue();
         } else {
             // This will make the clause vanish: BF1 and (BF2 or True) = BF1 and True = BF1
             return mgr.constantTrue();
+            // return mgr.constantFalse();
         }
     }
     // Check if the edgePred.back() existed in the regional map
@@ -342,7 +344,8 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSetRec(BF F, 
     if (eid != -1) {
         std::vector<std::pair<int, bool>> leftLit, rightLit;
         BF leftF = F;   // (F & (!(variables[e.first * 2] & variables[e.second * 2])));
-        BF rightF = (F & ((variables[e.first * 2] & variables[e.second * 2])));
+        // BF rightF = (F & ((variables[e.first * 2] & variables[e.second * 2])));
+        BF rightF = (F | ((!variables[e.first * 2] & !variables[e.second * 2])));
         BF leftAns = safetyTransitionSetRec(leftF, nEP);
         BF rightAns = safetyTransitionSetRec(rightF, nEP);
         // return (leftAns | (EF)) & (rightAns | (!EF));
@@ -358,20 +361,75 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSetRec(BF F, 
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 BF
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSet2Rec(BF S, BF P, std::vector<std::pair<int, int>> edgePred, std::set<int> regionPred) {
+    if (edgePred.size() == 0) {
+        // This will make the clause vanish: BF1 and (BF2 or True) = BF1 and True = BF1
+        // return mgr.constantTrue();
+        for (std::set<int>::iterator it=regionPred.begin(); it!=regionPred.end(); ++it){
+            P &= !variables[*it * 2];
+        }
+        if ((!P | S).isTrue()) {
+            // BF or False = BF
+            // return mgr.constantFalse();
+            return mgr.constantTrue();
+        } else {
+            // This will make the clause vanish: BF1 and (BF2 or True) = BF1 and True = BF1
+            // return mgr.constantTrue();
+            return mgr.constantFalse();
+        }
+    }
+    // Check if the edgePred.back() existed in the regional map
+    std::pair<int, int> e = edgePred.back();
+    std::vector<std::pair<int, int>> nEP = edgePred;
+    nEP.pop_back();
+    int eid = pcvz->getEdgeIDByIndex(e.first, e.second);
+    BF EF = (variables[e.first * 2] & variables[e.second * 2 + 1]) | (variables[e.first * 2 + 1] & variables[e.second * 2]);
+    // If so, do the Boole Expansion: F = ("Left") (F(e=0) + e)*("Right") (F(e=1) + (!e))
+    if (eid != -1) {
+        std::set<int> leftRP = regionPred;
+        std::set<int> rightRP = regionPred;
+        // maintain regionPred: regions not in edges that we will take
+        if (rightRP.find(e.first) != rightRP.end()){
+            rightRP.erase(e.first);
+        }
+        if (rightRP.find(e.second) != rightRP.end()){
+            rightRP.erase(e.second);
+        }
+        std::vector<std::pair<int, bool>> leftLit, rightLit;
+        BF leftP = P;   // (F & (!(variables[e.first * 2] & variables[e.second * 2])));
+        BF rightP = (P & ((variables[e.first * 2] | variables[e.second * 2])));
+        BF leftAns = safetyTransitionSet2Rec(S, leftP, nEP, leftRP);
+        BF rightAns = safetyTransitionSet2Rec(S, rightP, nEP, rightRP);
+        // return (leftAns | (EF)) & (rightAns | (!EF));
+        return (leftAns & (!EF)) | (rightAns & (EF));
+    }
+    // If not, pass: F = F(e=0)*(!e)
+    else {
+        BF nextP = P;   // (F & (!(variables[e.first * 2] & variables[e.second * 2])));
+        BF ans = safetyTransitionSet2Rec(S, nextP, nEP, regionPred);
+        return ans;   // & (!EF);
+    }
+}
+
+template <class T, bool oneStepRecovery, bool systemGoalEncoded>
+BF
 XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::safetyTransitionSet() {
     // create intermediate state predicate variables in BF manager
     // Not required because for now we only care about CNF
     // Create a list of edges to process recursively, including those not in region map
     std::vector<std::pair<int, int>> edges;
+    std::set<int> regions;
     for (int i = 0; i < pcvz->getRegionNum(); i++) {
         for (int j = i; j < pcvz->getRegionNum(); j++) {
             edges.push_back(std::make_pair(i, j));
         }
+        regions.insert(i);
     }
     // transform safetySysNoRM to CNF in int. state
     BF tbt = safetySysNoRM;   // to-be-transformed
     // printStrategyBDD(safetySysNoRM, "safetyNoRMBDD");
-    BF ret = safetyTransitionSetRec(tbt, edges);
+    // BF ret = safetyTransitionSetRec(tbt, edges);
+    BF ret = safetyTransitionSet2Rec(tbt, mgr.constantTrue(), edges, regions);
     return ret;
 }
 
@@ -424,7 +482,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::BF2CVZClauses(BF bf, whichCla
     std::string rafilename = "bf_2_cnf";
     std::string header_ra_cnf = "";
     // TODO: consider making clause buffer a global thing
-    int rclausesInCNFIndex[1000000], rclauseN = 0, rvarSize = 0;
+    int rclausesInCNFIndex[2000000], rclauseN = 0, rvarSize = 0;
     mgr.writeBDDToCNFFile(rafilename.c_str(), header_ra_cnf,
                           bf, variables, variableNames, rclausesInCNFIndex, rclauseN, rvarSize);
     for (int i = 0; i < rclauseN; i++) {
@@ -596,6 +654,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
         }
         // Do the CP for that
         pcvz->printMiniZinc(toPatcher, planassignment, "prefixAsgn", -1, -1, regAsns, false);
+        // pcvz->printMiniZinc(toTerminal, planassignment, "prefixAsgn", -1, -1, regAsns, false);
         planPrefix = pcvz->getPatch();
         // check for transitions
         BF isFB = getIntermediateStateFeedback(planPrefix);   // Intermediate State Feed Back
@@ -610,7 +669,12 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
         p4Plan.addTransitionPrefix(planPrefix[i]);
     }
     // the last region assignment in the prefix
-    std::vector<int> rA_firstGoal = pcvz->edge2RegionState(false, planPrefix[planPrefix.size() - 1]);
+    std::vector<int> rA_firstGoal;
+    if (planPrefix.size() > 0){
+        rA_firstGoal = pcvz->edge2RegionState(false, planPrefix[planPrefix.size() - 1]);
+    } else {
+        rA_firstGoal = pcvz->getRegionInit();
+    }
     // for dbg
     // for (auto rA_fG : rA_firstGoal) {
     //     std::cout << rA_fG << ", " << std::endl;
@@ -678,6 +742,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeExplicitStrategy() {
         for (int i = 0; i < planSuffix.size(); i++) {
             p4Plan.addTransitionSuffix(planSuffix[i], g);
         }
+        // TODO: planSuffix size checker
         rA = pcvz->edge2RegionState(false, planSuffix[planSuffix.size() - 1]);
     }
     // print a dot for testing
@@ -1042,7 +1107,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGivenHorizonDoubleStr
 
 template <class T, bool oneStepRecovery, bool systemGoalEncoded>
 bool
-XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP) {
+XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std::vector<std::pair<int, int>> locP, BF isFB) {
     std::cout << "=========<Patching For Goal: " << goalID << " >==========" << std::endl;
     std::vector<std::vector<int>> dum;
     // check for the patch bound
@@ -1071,7 +1136,7 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::patchForGoal(int goalID, std:
         patchFound = true;
         return patchFound;
     }
-    BF isFB = safetyTransitionSet();   // mgr.constantTrue();
+    // BF isFB = safetyTransitionSet();   // mgr.constantTrue();
     std::vector<std::vector<int>> ppatch;
     while (!patchFound) {
         // get init/goal state as BF
@@ -1229,11 +1294,16 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
             // reasgnRegionState.push_back(0);
             // newCaps.push_back(std::make_pair("C", 5));
             // newCaps.push_back(std::make_pair("B", 7));
-            newCaps.push_back(std::make_pair("E", 40));
-            newCaps.push_back(std::make_pair("A", 30));
+            newCaps.push_back(std::make_pair("E", 20));
+            newCaps.push_back(std::make_pair("F", 20));
+            newCaps.push_back(std::make_pair("G", 20));
+            newCaps.push_back(std::make_pair("H", 20));
+            newCaps.push_back(std::make_pair("I", 20));
+            newCaps.push_back(std::make_pair("J", 20));
             // modEdges.push_back(std::make_pair(std::make_pair("A", "E"), false));
-            modEdges.push_back(std::make_pair(std::make_pair("F", "E"), true));
-            // modEdges.push_back(std::make_pair(std::make_pair("E", "C"), true));
+            modEdges.push_back(std::make_pair(std::make_pair("A", "B"), true));
+            modEdges.push_back(std::make_pair(std::make_pair("K", "G"), true));
+            modEdges.push_back(std::make_pair(std::make_pair("F", "I"), false));
         } else if (typeM == "EXIT") {
             std::cout << "Program Exit" << std::endl;
             return;
@@ -1317,10 +1387,11 @@ XSwarmTest<T, oneStepRecovery, systemGoalEncoded>::computeAndPrintSymbolicStrate
         std::vector<std::pair<int, int>> locP = p4Plan.localizePatch();
         // do the patch
         bool patchFound = true;
+        BF isFB = safetyTransitionSet();   // mgr.constantTrue();
         for (int i = 0; i <= livenessGuarantees.size(); i++) {
             int goalID = i - 1;
             locP = p4Plan.localizePatch();
-            bool isFound = patchForGoal(goalID, locP);
+            bool isFound = patchForGoal(goalID, locP, isFB);
             patchFound &= isFound;
             if (isFound) {
                 std::cout << "Goal " << i << " is patched" << std::endl;

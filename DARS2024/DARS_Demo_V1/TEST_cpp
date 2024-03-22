@@ -1,0 +1,10 @@
+            newCaps.push_back(std::make_pair("E", 20));
+            newCaps.push_back(std::make_pair("F", 20));
+            newCaps.push_back(std::make_pair("G", 20));
+            newCaps.push_back(std::make_pair("H", 20));
+            newCaps.push_back(std::make_pair("I", 20));
+            newCaps.push_back(std::make_pair("J", 20));
+            // modEdges.push_back(std::make_pair(std::make_pair("A", "E"), false));
+            modEdges.push_back(std::make_pair(std::make_pair("A", "B"), true));
+            modEdges.push_back(std::make_pair(std::make_pair("K", "G"), true));
+            modEdges.push_back(std::make_pair(std::make_pair("F", "I"), false));

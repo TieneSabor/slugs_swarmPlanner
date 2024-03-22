@@ -220,9 +220,13 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
     char mznFileName[fl + 5];
     char outFileName[fl + 5];
     char mznExecName[9];
+    char time_lim_flag[13];
+    char time_lim[6];
     sprintf(mznFileName, "%s.mzn", fileName.c_str());
     sprintf(outFileName, "%s.txt", fileName.c_str());
     sprintf(mznExecName, "minizinc");
+    sprintf(time_lim_flag, "--time-limit");
+    sprintf(time_lim, "60000");
     // check where the mzn is printed to
     switch (dest) {
     case toTerminal:
@@ -248,7 +252,7 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
             // re-direct the std out
             // std::cout << mznFileName << ", " << outFileName << std::endl;
             int resd = dup2(link[1], STDOUT_FILENO);
-            execv("/home/brad/Downloads/MiniZincIDE-2.8.3-bundle-linux-x86_64/bin/minizinc", argv);
+            execv("/home/brad/Downloads/MiniZincIDE-2.7.6-bundle-linux-x86_64/bin/minizinc", argv);
             // execvp("minizinc", argv);
         }
         // wait for the child to complete
@@ -272,11 +276,11 @@ convert2MiniZinc::printMiniZinc(printDest dest, printFor reason, std::string fil
         pid_t pid1 = fork();
         if (pid1 == 0) {
             // then it is the child
-            char *argv[3] = {mznExecName, mznFileName, NULL};
+            char *argv[5] = {mznExecName, time_lim_flag, time_lim, mznFileName, NULL};
             // re-direct the std out
             // std::cout << mznFileName << ", " << outFileName << std::endl;
             int resd = dup2(link[1], STDOUT_FILENO);
-            execv("/home/brad/Downloads/MiniZincIDE-2.8.3-bundle-linux-x86_64/bin/minizinc", argv);
+            execv("/home/brad/Downloads/MiniZincIDE-2.7.6-bundle-linux-x86_64/bin/minizinc", argv);
             // execvp("minizinc", argv);
         }
         // get the string from pipe

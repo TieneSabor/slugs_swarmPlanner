@@ -1250,7 +1250,7 @@ StoreCnfMaxtermByMaxtermRecur(
 
     if (cuddIsConstant(N)) {
         // add clause to clauses
-        if ((*clauseN) * (ddMgr->size+1) >= 1000000){
+        if ((*clauseN) * (ddMgr->size+1) >= 2000000){
           printf("cudd dump cnf exceed buffer\r\n");
         }
         for (int i = 0; i < ddMgr->size; i++) {

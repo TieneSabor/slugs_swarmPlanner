@@ -1,0 +1,68 @@
+# specify regions
+# A 50 20 0
+# B 50 10 0
+# C 50 0 0
+# D 50 0 0
+# E 50 0 0
+# F 50 0 0
+# G 50 0 0
+# H 50 0 0
+# I 50 0 0
+# J 50 0 0
+# K 50 20 0
+# specify edges
+# A A
+# B B
+# C C
+# D D
+# E E
+# F F
+# G G
+# H H
+# I I
+# J J
+# K K
+# A B
+# A C
+# A D
+# B D
+# C D
+# D E
+# D H
+# E F
+# F G
+# G K
+# K J
+# J I
+# I H
+# regional map end
+[INPUT]
+
+[OUTPUT]
+
+[ENV_INIT]
+
+[SYS_INIT]
+& A & B & ! C & ! D & ! E & ! F & ! G & ! H & ! I & ! J K
+# & ! A & ! B & ! C & ! D & ! E & ! F & G & ! H & ! I & ! J ! K
+
+[ENV_TRANS]
+
+[SYS_TRANS]
+# user set-up safety
+# (A \/ K) -> B
+| B & ! A ! K
+# !(B /\ C)
+| ! B ! C
+
+[ENV_LIVENESS]
+
+[SYS_LIVENESS]
+& ! A & ! B & ! C & ! D & E & F & G & ! H & ! I & ! J ! K
+& A ! K
+& ! A K
+C
+# & ! A & ! B & ! C & ! D & ! E & ! F & ! G & H & I & J ! K
+
+# & A & ! B & ! C & ! D & ! E & ! F & ! G & ! H & ! I & ! J ! K
+# & ! A & ! B & ! C & ! D & ! E & ! F & ! G & ! H & ! I & ! J K

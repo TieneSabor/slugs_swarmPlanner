@@ -1,0 +1,346 @@
+RESULT: Specification is realizable.
+=========<Generate an original plan by CP>==========
+RESULT: Specification is realizable.
+to patcher
+program execution successful
+Patch size: 3
+0 20 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 
+0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 19 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+Generate Suffix Part of the plan
+to patcher
+program execution successful
+Patch size: 3
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 19 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 29 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 
+Generate Suffix Part of the plan
+to patcher
+program execution successful
+Patch size: 1
+0 29 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 
+Generate Suffix Part of the plan
+to patcher
+program execution successful
+Patch size: 3
+0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 
+0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 
+Generate Suffix Part of the plan
+to patcher
+program execution successful
+Patch size: 4
+0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 20 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 0 0 0 0 0 19 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+=========<Start building the patch>==========
+Please specify the modification type: {DEC/RMV/RAL}
+TEST
+Multi Modification Test
+50 50 50 50 50 50 50 50 50 50 50 50 50 50 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 50 
+A -> B: 1
+K -> G: 1
+F -> I: 0
+50 50 50 50 50 50 50 50 50 50 50 50 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 50 
+Prefix Transitions
+Step [0, 1]: { 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 19, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Suffix Transitions
+Goal ID: 0
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 19, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Goal ID: 1
+Step [0, 1]: { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Goal ID: 2
+Step [0, 1]: { 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, } 
+Goal ID: 3
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 20, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 19, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+=========<Do an initial guess on Patch Horizon>==========
+State Sum: 10, robot num: 50
+State Sum: 21, robot num: 50
+State Sum: 1, robot num: 50
+State Sum: 10, robot num: 50
+State Sum: 21, robot num: 50
+State Sum: 1, robot num: 50
+=========<Patching For Goal: -1 >==========
+Problematic State: 0
+Problematic State: 2
+=========<Patching Iteration>==========
+=========<Patching Iteration: Getting Boundaries>==========
+Initial State: 0, final state: 2
+Patch horizons exceed regional capacities.  Patch will not work
+=========<Patching Iteration: Expand the Patch Horizon>==========
+=========<Patching Iteration: Getting Boundaries>==========
+Initial State: 0, final state: 0
+=========<Patching Iteration: Check Reachability>==========
+Patch Layer Number Guess: 10
+=========<Patching Iteration: Trying CP the Patch>==========
+Trying for 0 layers
+to patcher
+program execution successful
+Patch size: 0
+Trying for 1 layers
+to patcher
+program execution successful
+Patch size: 6
+10 0 10 1 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 
+0 0 10 1 0 0 0 0 0 19 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 
+0 0 0 0 20 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 10 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 10 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 20 0 0 10 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+patch Found
+Goal 0 is patched
+State Sum: 21, robot num: 50
+State Sum: 1, robot num: 50
+=========<Patching For Goal: 0 >==========
+Problematic State: 3
+=========<Patching Iteration>==========
+=========<Patching Iteration: Getting Boundaries>==========
+Initial State: 3, final state: 3
+=========<Patching Iteration: Check Reachability>==========
+Patch Layer Number Guess: 6
+=========<Patching Iteration: Trying CP the Patch>==========
+Trying for 1 layers
+to patcher
+Warning: model inconsistency detected
+
+program execution successful
+Patch size: 0
+Trying for 2 layers
+to patcher
+program execution successful
+Patch size: 2
+0 0 0 1 29 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 1 0 0 0 0 29 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 
+patch Found
+Goal 1 is patched
+State Sum: 1, robot num: 50
+=========<Patching For Goal: 1 >==========
+Problematic State: 0
+=========<Patching Iteration>==========
+=========<Patching Iteration: Getting Boundaries>==========
+Initial State: 0, final state: 0
+=========<Patching Iteration: Check Reachability>==========
+Patch Layer Number Guess: 6
+=========<Patching Iteration: Trying CP the Patch>==========
+Trying for 1 layers
+to patcher
+Warning: model inconsistency detected
+
+program execution successful
+Patch size: 0
+Trying for 2 layers
+to patcher
+program execution successful
+Patch size: 0
+Trying for 3 layers
+to patcher
+program execution successful
+Patch size: 0
+Trying for 4 layers
+to patcher
+program execution successful
+Patch size: 4
+0 0 29 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 1 0 0 0 0 0 29 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 
+0 0 0 30 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 
+patch Found
+Goal 2 is patched
+=========<Patching For Goal: 2 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 3 is patched
+=========<Patching For Goal: 3 >==========
+Problematic State: 1
+Problematic State: 3
+=========<Patching Iteration>==========
+=========<Patching Iteration: Getting Boundaries>==========
+Initial State: 1, final state: 3
+=========<Patching Iteration: Check Reachability>==========
+Patch Layer Number Guess: 5
+=========<Patching Iteration: Trying CP the Patch>==========
+Trying for 3 layers
+to patcher
+program execution successful
+Patch size: 3
+0 0 0 0 0 0 0 0 0 0 0 20 10 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 10 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 10 0 0 0 20 0 0 0 0 0 0 0 0 0 0 0 0 
+patch Found
+Goal 4 is patched
+Prefix Transitions
+Step [0, 1]: { 10, 0, 10, 1, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, } 
+Step [1, 2]: { 0, 0, 10, 1, 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 10, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Suffix Transitions
+Goal ID: 0
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 10, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 1, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [4, 5]: { 0, 0, 0, 1, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Goal ID: 1
+Step [0, 1]: { 0, 0, 29, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 1, 0, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, } 
+Goal ID: 2
+Step [0, 1]: { 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, } 
+Goal ID: 3
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 10, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+=========<Start building the patch>==========
+Please specify the modification type: {DEC/RMV/RAL}
+RAL
+Please specify the transition ID: 
+0
+and the goal ID: 
+1
+and the expected number assignment on each region: 
+A: 
+35
+B: 
+5
+C: 
+0
+D: 
+0
+E: 
+0
+F: 
+0
+G: 
+10
+H: 
+0
+I: 
+0
+J: 
+0
+K: 
+0
+=========<Do the Re-Assignment: Should not work with Changing the capacity or Removing the edge>==========
+Max Re-assignment Patch Layer Number: 5
+to patcher
+program execution successful
+Patch size: 0
+to patcher
+program execution successful
+Patch size: 0
+to patcher
+program execution successful
+Patch size: 0
+to patcher
+program execution successful
+Patch size: 4
+25 0 4 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 10 0 0 0 0 0 0 0 0 0 0 0 0 
+25 0 0 1 0 0 0 0 0 4 0 0 0 0 0 0 0 10 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+25 0 0 5 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+25 0 0 5 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+patch Found
+...
+to patcher
+program execution successful
+Patch size: 4
+0 0 35 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 5 0 0 0 0 0 35 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 
+0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 
+to patcher
+program execution successful
+Patch size: 3
+0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 
+0 0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 
+0 0 0 0 0 0 0 0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 
+to patcher
+program execution successful
+Patch size: 4
+0 0 0 0 0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 20 20 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 0 20 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 20 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+to patcher
+program execution successful
+Patch size: 5
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 0 0 20 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 20 0 0 20 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 39 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 39 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 
+to patcher
+program execution successful
+Patch size: 4
+0 0 1 39 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 39 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 0 0 0 
+0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 0 0 
+=========<Do an initial guess on Patch Horizon>==========
+=========<Patching For Goal: -1 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 0 is patched
+=========<Patching For Goal: 0 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 1 is patched
+=========<Patching For Goal: 1 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 2 is patched
+=========<Patching For Goal: 2 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 3 is patched
+=========<Patching For Goal: 3 >==========
+=========<Patching Iteration>==========
+No need to modify in this case
+Goal 4 is patched
+Prefix Transitions
+Step [0, 1]: { 25, 0, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 25, 0, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 25, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 25, 0, 0, 5, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [4, 5]: { 0, 0, 35, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [5, 6]: { 0, 0, 0, 5, 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [6, 7]: { 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, } 
+Step [7, 8]: { 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, } 
+Suffix Transitions
+Goal ID: 0
+Step [0, 1]: { 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, } 
+Goal ID: 1
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 20, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Goal ID: 2
+Step [0, 1]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 20, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 20, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 39, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [4, 5]: { 0, 0, 0, 39, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Goal ID: 3
+Step [0, 1]: { 0, 0, 1, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [1, 2]: { 0, 0, 0, 39, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } 
+Step [2, 3]: { 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, } 
+Step [3, 4]: { 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, } 
+=========<Start building the patch>==========
+Please specify the modification type: {DEC/RMV/RAL}
+
+

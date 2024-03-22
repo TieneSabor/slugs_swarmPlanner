@@ -5,6 +5,7 @@
 #include "swarmTest2MiniZinc.hpp"
 #include "swarmTestPatcher.hpp"
 #include <string>
+#include <set>
 
 using namespace swarmTest;
 /**
@@ -92,6 +93,7 @@ class XSwarmTest : public T {
     void safetySys2IntState();
 
     BF safetyTransitionSetRec(BF F, std::vector<std::pair<int, int>> edgePred);
+    BF safetyTransitionSet2Rec(BF S, BF P, std::vector<std::pair<int, int>> edgePred, std::set<int> regionPred);
 
     BF safetyTransitionSet();
 
@@ -107,7 +109,7 @@ class XSwarmTest : public T {
 
     bool patchForGoal_Legacy(int goalID, std::vector<std::pair<int, int>> locP);
 
-    bool patchForGoal(int goalID, std::vector<std::pair<int, int>> locP);
+    bool patchForGoal(int goalID, std::vector<std::pair<int, int>> locP, BF isFB);
 
     void updateRAS();
 
